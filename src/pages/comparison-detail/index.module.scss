@@ -95,6 +95,12 @@
   box-shadow: $shadow-sm;
 }
 
+.compareCardRejected {
+  border: 2rpx solid #e5e6eb;
+  background: #f7f8fa;
+  box-shadow: none;
+}
+
 .compareHeader {
   display: flex;
   align-items: center;
@@ -125,6 +131,11 @@
   font-size: 28rpx;
   font-weight: 600;
   color: $color-text-primary;
+}
+
+.supplierNameRejected {
+  color: #86909c;
+  text-decoration: line-through;
 }
 
 .scoreBadge {
@@ -489,4 +500,98 @@
 
 .modalBtnLose {
   background: linear-gradient(135deg, #f53f3f 0%, #ff7875 100%) !important;
+}
+
+.rejectNoteBox {
+  margin: 0 28rpx;
+  padding: 16rpx 20rpx;
+  background: linear-gradient(135deg, #fff2f0 0%, #ffece8 100%);
+  border-radius: 12rpx;
+  border-left: 6rpx solid #f53f3f;
+}
+
+.rejectNoteLabel {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #f53f3f;
+}
+
+.rejectNoteText {
+  font-size: 26rpx;
+  color: #d9363e;
+  line-height: 1.7;
+}
+
+.historySection {
+  margin: 8rpx 24rpx 24rpx;
+  padding: 28rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: $shadow-sm;
+}
+
+.historyHeader {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.historyIcon {
+  font-size: 28rpx;
+}
+
+.historyTitle {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+}
+
+.historyItem {
+  display: flex;
+  gap: 16rpx;
+  padding: 16rpx 0;
+  border-bottom: 2rpx dashed #f0f0f0;
+}
+
+.historyItem:last-child {
+  border-bottom: none;
+}
+
+.historyStatusDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  margin-top: 10rpx;
+  flex-shrink: 0;
+}
+
+.historyContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.historyRow1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.historySupplier {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.historyNote {
+  font-size: 26rpx;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-bottom: 6rpx;
+}
+
+.historyTime {
+  font-size: 22rpx;
+  color: #86909c;
 }

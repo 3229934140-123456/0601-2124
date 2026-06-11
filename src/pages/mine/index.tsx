@@ -177,8 +177,13 @@ const MinePage: React.FC = () => {
               const dealReview = reviewItems.find(r =>
                 r.demandId === rating.demandId && r.supplierId === rating.supplierId
               )
+              const handleGoReview = () => {
+                if (dealReview) {
+                  Taro.navigateTo({ url: `/pages/deal-review/index?reviewId=${dealReview.id}` })
+                }
+              }
               return (
-                <View key={rating.id} className={styles.ratingFullCard}>
+                <View key={rating.id} className={styles.ratingFullCard} onClick={handleGoReview}>
                   <View className={styles.ratingFullHeader}>
                     <View className={styles.ratingSupplierInfo}>
                       <Text className={styles.ratingSupplierName}>{rating.supplierName}</Text>
@@ -219,6 +224,10 @@ const MinePage: React.FC = () => {
                       <Text className={styles.ratingCommentText}>{rating.comment}</Text>
                     </View>
                   )}
+
+                  <View className={styles.ratingReviewBtn} onClick={(e: any) => { e.stopPropagation(); handleGoReview() }}>
+                    <Text>📋 查看复盘详情 →</Text>
+                  </View>
                 </View>
               )
             })

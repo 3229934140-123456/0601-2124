@@ -33,7 +33,7 @@ const ReviewPage = () => {
     { key: 'shortlisted', label: '已入围' },
     { key: 'negotiating', label: '商谈中' },
     { key: 'won', label: '已中标' },
-    { key: 'eliminated', label: '已淘汰' },
+    { key: 'rejected', label: '已淘汰' },
   ]
 
   const groupedReviews = useMemo(() => {
@@ -55,7 +55,7 @@ const ReviewPage = () => {
         shortlisted: reviews.filter(r => r.reviewStatus === 'shortlisted').length,
         negotiating: reviews.filter(r => r.reviewStatus === 'negotiating').length,
         won: reviews.filter(r => r.reviewStatus === 'won').length,
-        eliminated: reviews.filter(r => r.reviewStatus === 'eliminated').length,
+        rejected: reviews.filter(r => r.reviewStatus === 'rejected').length,
       }
       return { demand, reviews, stats }
     }).filter(item => item.demand)
@@ -350,7 +350,7 @@ const ReviewPage = () => {
                     <View className={`${styles.statusBtn} ${styles.statusBtnShortlisted}`} onClick={() => openStatusModal(review, 'shortlisted')}>
                       <Text>入围</Text>
                     </View>
-                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'eliminated')}>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'rejected')}>
                       <Text>淘汰</Text>
                     </View>
                   </>
@@ -360,7 +360,7 @@ const ReviewPage = () => {
                     <View className={`${styles.statusBtn} ${styles.statusBtnNegotiating}`} onClick={() => openStatusModal(review, 'negotiating')}>
                       <Text>商谈</Text>
                     </View>
-                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'eliminated')}>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'rejected')}>
                       <Text>淘汰</Text>
                     </View>
                   </>
@@ -370,7 +370,7 @@ const ReviewPage = () => {
                     <View className={`${styles.statusBtn} ${styles.statusBtnWon}`} onClick={() => openStatusModal(review, 'won')}>
                       <Text>中标</Text>
                     </View>
-                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'eliminated')}>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'rejected')}>
                       <Text>淘汰</Text>
                     </View>
                   </>
@@ -380,7 +380,7 @@ const ReviewPage = () => {
                     <Text>✓ 已中标</Text>
                   </View>
                 )}
-                {review.reviewStatus === 'eliminated' && (
+                {review.reviewStatus === 'rejected' && (
                   <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`}>
                     <Text>✗ 已淘汰</Text>
                   </View>
@@ -424,7 +424,7 @@ const ReviewPage = () => {
               {targetStatus === 'shortlisted' && '标记为入围'}
               {targetStatus === 'negotiating' && '标记为商谈中'}
               {targetStatus === 'won' && '标记为中标'}
-              {targetStatus === 'eliminated' && '标记为淘汰'}
+              {targetStatus === 'rejected' && '标记为淘汰'}
             </Text>
             <View className={styles.modalRow}>
               <Text className={styles.modalLabel}>供应方</Text>
@@ -432,11 +432,11 @@ const ReviewPage = () => {
             </View>
             <View className={styles.modalRow}>
               <Text className={styles.modalLabel}>
-                {targetStatus === 'eliminated' ? '淘汰原因' : '评审备注'} <Text style={{ color: '#c9cdd4' }}>（选填）</Text>
+                {targetStatus === 'rejected' ? '淘汰原因' : '评审备注'} <Text style={{ color: '#c9cdd4' }}>（选填）</Text>
               </Text>
               <Textarea
                 className={styles.modalInput}
-                placeholder={targetStatus === 'eliminated' ? '请输入淘汰原因，便于后续复盘总结' : '请输入评审备注信息'}
+                placeholder={targetStatus === 'rejected' ? '请输入淘汰原因，便于后续复盘总结' : '请输入评审备注信息'}
                 placeholderStyle="color: #c9cdd4"
                 value={statusNote}
                 onInput={(e: any) => setStatusNote(e.detail.value)}

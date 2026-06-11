@@ -2,7 +2,9 @@ import { useState, useMemo } from 'react'
 import { View, Text, ScrollView, Textarea } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useAppStore } from '@/store'
+import { ReviewStatusMap } from '@/types'
 import { formatPrice, formatBudget, getMatchScoreColor } from '@/utils'
+import StatusTag from '@/components/StatusTag'
 import styles from './index.module.scss'
 
 const ComparisonDetailPage = () => {
@@ -14,7 +16,7 @@ const ComparisonDetailPage = () => {
   const [activeFilter, setActiveFilter] = useState('all')
   const [decisionModalVisible, setDecisionModalVisible] = useState(false)
   const [currentReviewItem, setCurrentReviewItem] = useState<any>(null)
-  const [decisionType, setDecisionType] = useState<'won' | 'eliminated'>('eliminated')
+  const [decisionType, setDecisionType] = useState<'won' | 'rejected'>('rejected')
   const [decisionNote, setDecisionNote] = useState('')
 
   const filters = [
@@ -32,16 +34,27 @@ const ComparisonDetailPage = () => {
     return demands.find(d => d.id === firstDemandId) || demands[0]
   }, [demandId, demands, reviewItems])
 
-  const shortlisted = useMemo(() =>
-    reviewItems.filter(r =>
-      r.demandId === (activeDemand?.id || '') &&
-      ['shortlisted', 'negotiating', 'won'].includes(r.reviewStatus)
-    ),
+  const demandReviews = useMemo(() =>
+    reviewItems.filter(r => r.demandId === (activeDemand?.id || '')),
     [reviewItems, activeDemand]
   )
 
+  const shortlisted = useMemo(() =>
+    demandReviews.filter(r =>
+      ['shortlisted', 'negotiating', 'won'].includes(r.reviewStatus)
+    ),
+    [demandReviews]
+  )
+
+  const decisionHistory = useMemo(() =>
+    demandReviews
+      .filter(r => ['won', 'rejected'].includes(r.reviewStatus) && r.reviewNotes)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [demandReviews]
+  )
+
   const comparisonData = useMemo(() =>
-    shortlisted.map(review => {
+    demandReviews.map(review => {
       const supplier = suppliers.find(s => s.id === review.supplierId)
       return {
         id: review.id,
@@ -59,29 +72,61 @@ const ComparisonDetailPage = () => {
         tags: supplier?.tags || [],
         reviewNotes: review.reviewNotes,
         reviewStatus: review.reviewStatus,
+        isActive: ['shortlisted', 'negotiating', 'won'].includes(review.reviewStatus),
       }
-    }).sort((a, b) => b.matchScore - a.matchScore),
-    [shortlisted, suppliers]
+    }).sort((a, b) => {
+      if (a.isActive !== b.isActive) return a.isActive ? -1 : 1
+      if (a.isActive) return b.matchScore - a.matchScore
+      return 0
+    }),
+    [demandReviews, suppliers]
   )
 
-  const minPrice = comparisonData.length > 0 ? Math.min(...comparisonData.map(c => c.price)) : 0
-  const highestScore = comparisonData.length > 0 ? Math.max(...comparisonData.map(c => c.matchScore)) : 0
+  const activeComparisonData = comparisonData.filter(c => c.isActive)
+  const minPrice = activeComparisonData.length > 0 ? Math.min(...activeComparisonData.map(c => c.price)) : 0
+  const highestScore = activeComparisonData.length > 0 ? Math.max(...activeComparisonData.map(c => c.matchScore)) : 0
 
-  if (comparisonData.length < 2) {
+  if (activeComparisonData.length < 2) {
     return (
       <ScrollView scrollY className={styles.page}>
         <View className={styles.headerCard}>
-          <Text className={styles.demandTitle}>需求比对表</Text>
+          <Text className={styles.demandTitle}>{activeDemand?.title || '需求比对表'}</Text>
         </View>
         <View className={styles.emptyHintCard}>
           <View className={styles.emptyHintIcon}>⚠️</View>
           <View className={styles.emptyHintContent}>
             <Text className={styles.emptyHintTitle}>入围供应方不足</Text>
             <Text className={styles.emptyHintDesc}>
-              当前入围供应方仅{comparisonData.length}家，至少需要2家入围供应方才能生成比对表。请返回评审清单，将更多供应方标记为"入围"状态。
+              当前有效入围供应方仅{activeComparisonData.length}家，至少需要2家入围供应方才能生成比对表。请返回评审清单，将更多供应方标记为"入围"状态。
             </Text>
           </View>
         </View>
+
+        {comparisonData.filter(c => !c.isActive).length > 0 && (
+          <View className={styles.historySection}>
+            <View className={styles.historyHeader}>
+              <Text className={styles.historyIcon}>📜</Text>
+              <Text className={styles.historyTitle}>决策历史记录</Text>
+            </View>
+            {decisionHistory.map(dh => {
+              const statusInfo = ReviewStatusMap[dh.reviewStatus]
+              return (
+                <View key={dh.id} className={styles.historyItem}>
+                  <View className={styles.historyStatusDot} style={{ background: statusInfo?.color || '#86909c' }} />
+                  <View className={styles.historyContent}>
+                    <View className={styles.historyRow1}>
+                      <Text className={styles.historySupplier}>{dh.supplierName}</Text>
+                      <StatusTag label={statusInfo?.label || '-'} color={statusInfo?.color || '#86909c'} size="small" />
+                    </View>
+                    <Text className={styles.historyNote}>{dh.reviewNotes}</Text>
+                    <Text className={styles.historyTime}>决策时间：{dh.createdAt}</Text>
+                  </View>
+                </View>
+              )
+            })}
+          </View>
+        )}
+
         <View className={styles.bottomBar}>
           <View className={styles.btnPrimary} onClick={() => Taro.switchTab({ url: '/pages/review/index' })}>
             <Text>返回评审清单</Text>
@@ -91,7 +136,7 @@ const ComparisonDetailPage = () => {
     )
   }
 
-  const openDecisionModal = (item: any, type: 'won' | 'eliminated') => {
+  const openDecisionModal = (item: any, type: 'won' | 'rejected') => {
     setCurrentReviewItem(item)
     setDecisionType(type)
     setDecisionNote('')
@@ -141,7 +186,7 @@ const ComparisonDetailPage = () => {
         </View>
         <View className={styles.summaryRow}>
           <View className={styles.summaryItem}>
-            <Text className={styles.summaryNum}>{comparisonData.length}</Text>
+            <Text className={styles.summaryNum}>{activeComparisonData.length}</Text>
             <Text className={styles.summaryLabel}>入围供应商</Text>
           </View>
           <View className={styles.summaryItem}>
@@ -173,111 +218,161 @@ const ComparisonDetailPage = () => {
           <Text className={styles.recommendTitle}>智能推荐</Text>
         </View>
         <Text className={styles.recommendText}>
-          基于多维综合评分，建议优先选择「{comparisonData[0]?.name}」。
-          该供应商匹配度最高{highestScore}分，报价{formatPrice(comparisonData[0]?.price)}，
-          历史成交{comparisonData[0]?.dealCount}笔，综合表现最优。
+          基于多维综合评分，建议优先选择「{activeComparisonData[0]?.name}」。
+          该供应商匹配度最高{highestScore}分，报价{formatPrice(activeComparisonData[0]?.price)}，
+          历史成交{activeComparisonData[0]?.dealCount}笔，综合表现最优。
         </Text>
       </View>
 
       <View className={styles.compareSection}>
-        {comparisonData.map((item, idx) => (
-          <View key={item.id} className={styles.compareCard}>
-            <View className={styles.compareHeader}>
-              <View className={styles.supplierShort}>
-                <View className={styles.supplierLogo}>{item.logo}</View>
-                <View>
-                  <Text className={styles.supplierName}>
-                    {idx + 1}. {item.name}
-                  </Text>
-                  {item.reviewStatus === 'won' && (
-                    <Text className={styles.statusBadgeWin}>✓ 已中标</Text>
-                  )}
+        {comparisonData.map((item, idx) => {
+          const statusInfo = ReviewStatusMap[item.reviewStatus] || ReviewStatusMap.pending
+          const isRejected = item.reviewStatus === 'rejected'
+          return (
+            <View
+              key={item.id}
+              className={`${styles.compareCard} ${isRejected ? styles.compareCardRejected : ''}`}
+            >
+              <View className={styles.compareHeader}>
+                <View className={styles.supplierShort}>
+                  <View className={styles.supplierLogo} style={isRejected ? { opacity: 0.5 } : {}}>{item.logo}</View>
+                  <View>
+                    <View style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <Text className={`${styles.supplierName} ${isRejected ? styles.supplierNameRejected : ''}`}>
+                        {item.isActive ? `${idx + 1}. ` : '• '}{item.name}
+                      </Text>
+                      <StatusTag
+                        label={statusInfo.label}
+                        color={statusInfo.color}
+                        bgColor={`${statusInfo.color}15`}
+                        size="small"
+                      />
+                    </View>
+                    {item.reviewStatus === 'won' && (
+                      <Text className={styles.statusBadgeWin}>✓ 已中标</Text>
+                    )}
+                  </View>
                 </View>
-              </View>
-              <View
-                className={styles.scoreBadge}
-                style={{ background: `linear-gradient(135deg, ${getMatchScoreColor(item.matchScore)} 0%, ${getMatchScoreColor(Math.round(item.matchScore * 0.8))} 100%)` }}
-              >
-                匹配 {item.matchScore}
-              </View>
-            </View>
-
-            <View className={styles.compareBody}>
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>报价金额</Text>
-                <View className={styles.rowValue}>
-                  <Text className={item.price === minPrice ? styles.highlightSuccess : styles.highlightDanger}>
-                    ¥{formatPrice(item.price)}
-                  </Text>
-                  {item.price === minPrice && <Text className={styles.bestBadge}>最优价</Text>}
-                </View>
-              </View>
-
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>匹配度</Text>
-                {renderProgress(item.matchScore, 100, `linear-gradient(90deg, ${getMatchScoreColor(Math.round(item.matchScore * 0.6))}, ${getMatchScoreColor(item.matchScore)})`)}
-              </View>
-
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>交付方式</Text>
-                <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.deliveryMethod}</Text>
-              </View>
-
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>交付周期</Text>
-                <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.deliveryCycle}</Text>
-              </View>
-
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>综合评分</Text>
-                <View className={styles.rowValue}>
-                  <Text style={{ color: '#ffa940' }}>★★★★★</Text>
-                  <Text className={styles.highlight}>{item.rating}分</Text>
+                <View
+                  className={styles.scoreBadge}
+                  style={{
+                    opacity: isRejected ? 0.5 : 1,
+                    background: `linear-gradient(135deg, ${getMatchScoreColor(item.matchScore)} 0%, ${getMatchScoreColor(Math.round(item.matchScore * 0.8))} 100%)`
+                  }}
+                >
+                  匹配 {item.matchScore}
                 </View>
               </View>
 
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>数据规模</Text>
-                <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.dataVolume}</Text>
-              </View>
-
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>历史成交</Text>
-                <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.dealCount}笔</Text>
-              </View>
-
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>数据标签</Text>
-                <View className={styles.tagsRow}>
-                  {item.tags?.slice(0, 5).map((tag, i) => (
-                    <Text key={i} className={`${styles.valueTag} ${i < 2 ? styles.valueTagBlue : ''}`}>{tag}</Text>
-                  ))}
+              {isRejected && item.reviewNotes && (
+                <View className={styles.rejectNoteBox}>
+                  <Text className={styles.rejectNoteLabel}>淘汰原因：</Text>
+                  <Text className={styles.rejectNoteText}>{item.reviewNotes}</Text>
                 </View>
-              </View>
+              )}
 
-              {item.reviewNotes && (
+              <View className={styles.compareBody} style={isRejected ? { opacity: 0.55 } : {}}>
                 <View className={styles.compareRow}>
-                  <Text className={styles.rowLabel}>评审备注</Text>
-                  <Text className={`${styles.rowValue}`} style={{ lineHeight: 1.7, color: '#595959' }}>
-                    {item.reviewNotes}
-                  </Text>
+                  <Text className={styles.rowLabel}>报价金额</Text>
+                  <View className={styles.rowValue}>
+                    <Text className={item.isActive && item.price === minPrice ? styles.highlightSuccess : styles.highlightDanger}>
+                      ¥{formatPrice(item.price)}
+                    </Text>
+                    {item.isActive && item.price === minPrice && <Text className={styles.bestBadge}>最优价</Text>}
+                  </View>
+                </View>
+
+                <View className={styles.compareRow}>
+                  <Text className={styles.rowLabel}>匹配度</Text>
+                  {renderProgress(item.matchScore, 100, `linear-gradient(90deg, ${getMatchScoreColor(Math.round(item.matchScore * 0.6))}, ${getMatchScoreColor(item.matchScore)})`)}
+                </View>
+
+                <View className={styles.compareRow}>
+                  <Text className={styles.rowLabel}>交付方式</Text>
+                  <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.deliveryMethod}</Text>
+                </View>
+
+                <View className={styles.compareRow}>
+                  <Text className={styles.rowLabel}>交付周期</Text>
+                  <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.deliveryCycle}</Text>
+                </View>
+
+                <View className={styles.compareRow}>
+                  <Text className={styles.rowLabel}>综合评分</Text>
+                  <View className={styles.rowValue}>
+                    <Text style={{ color: '#ffa940' }}>★★★★★</Text>
+                    <Text className={styles.highlight}>{item.rating}分</Text>
+                  </View>
+                </View>
+
+                <View className={styles.compareRow}>
+                  <Text className={styles.rowLabel}>数据规模</Text>
+                  <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.dataVolume}</Text>
+                </View>
+
+                <View className={styles.compareRow}>
+                  <Text className={styles.rowLabel}>历史成交</Text>
+                  <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.dealCount}笔</Text>
+                </View>
+
+                <View className={styles.compareRow}>
+                  <Text className={styles.rowLabel}>数据标签</Text>
+                  <View className={styles.tagsRow}>
+                    {item.tags?.slice(0, 5).map((tag, i) => (
+                      <Text key={i} className={`${styles.valueTag} ${i < 2 ? styles.valueTagBlue : ''}`}>{tag}</Text>
+                    ))}
+                  </View>
+                </View>
+
+                {!isRejected && item.reviewNotes && (
+                  <View className={styles.compareRow}>
+                    <Text className={styles.rowLabel}>评审备注</Text>
+                    <Text className={`${styles.rowValue}`} style={{ lineHeight: 1.7, color: '#595959' }}>
+                      {item.reviewNotes}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {item.isActive && item.reviewStatus !== 'won' && (
+                <View className={styles.decisionRow}>
+                  <View className={styles.decisionBtn} onClick={() => openDecisionModal(item, 'won')}>
+                    <Text className={styles.decisionBtnWin}>🏆 标记中标</Text>
+                  </View>
+                  <View className={styles.decisionBtn} onClick={() => openDecisionModal(item, 'rejected')}>
+                    <Text className={styles.decisionBtnLose}>✗ 淘汰出局</Text>
+                  </View>
                 </View>
               )}
             </View>
+          )
+        })}
+      </View>
 
-            {item.reviewStatus !== 'won' && item.reviewStatus !== 'eliminated' && (
-              <View className={styles.decisionRow}>
-                <View className={styles.decisionBtn} onClick={() => openDecisionModal(item, 'won')}>
-                  <Text className={styles.decisionBtnWin}>🏆 标记中标</Text>
-                </View>
-                <View className={styles.decisionBtn} onClick={() => openDecisionModal(item, 'eliminated')}>
-                  <Text className={styles.decisionBtnLose}>✗ 淘汰出局</Text>
+      {decisionHistory.length > 0 && (
+        <View className={styles.historySection}>
+          <View className={styles.historyHeader}>
+            <Text className={styles.historyIcon}>📜</Text>
+            <Text className={styles.historyTitle}>决策历史记录</Text>
+          </View>
+          {decisionHistory.map(dh => {
+            const statusInfo = ReviewStatusMap[dh.reviewStatus]
+            return (
+              <View key={dh.id} className={styles.historyItem}>
+                <View className={styles.historyStatusDot} style={{ background: statusInfo?.color || '#86909c' }} />
+                <View className={styles.historyContent}>
+                  <View className={styles.historyRow1}>
+                    <Text className={styles.historySupplier}>{dh.supplierName}</Text>
+                    <StatusTag label={statusInfo?.label || '-'} color={statusInfo?.color || '#86909c'} size="small" />
+                  </View>
+                  <Text className={styles.historyNote}>{dh.reviewNotes}</Text>
+                  <Text className={styles.historyTime}>决策时间：{dh.createdAt}</Text>
                 </View>
               </View>
-            )}
-          </View>
-        ))}
-      </View>
+            )
+          })}
+        </View>
+      )}
 
       {decisionModalVisible && (
         <View className={styles.modalMask} onClick={() => setDecisionModalVisible(false)}>

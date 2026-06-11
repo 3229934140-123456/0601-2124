@@ -1,0 +1,333 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+  padding-bottom: $spacing-xl;
+}
+
+.headerSection {
+  background: $gradient-primary;
+  padding: $spacing-xl $page-padding;
+  padding-top: calc(#{$spacing-xl} + env(safe-area-inset-top));
+  color: $color-text-white;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-xl;
+}
+
+.avatar {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-bold;
+  margin-right: $spacing-lg;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.userDetails {
+  flex: 1;
+}
+
+.userName {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  margin-bottom: 8rpx;
+}
+
+.userCompany {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+  margin-bottom: 8rpx;
+}
+
+.userRole {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+}
+
+.statsBanner {
+  display: flex;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  backdrop-filter: blur(10rpx);
+}
+
+.statsBannerItem {
+  flex: 1;
+  text-align: center;
+}
+
+.statsBannerValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: 4rpx;
+}
+
+.statsBannerLabel {
+  font-size: $font-size-xs;
+  opacity: 0.9;
+}
+
+.quickActions {
+  display: flex;
+  flex-wrap: wrap;
+  padding: $spacing-lg $page-padding;
+  gap: $spacing-md;
+  margin-top: -$spacing-lg;
+}
+
+.actionCard {
+  flex: 1;
+  min-width: 140rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-lg $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+.actionIcon {
+  font-size: 56rpx;
+  margin-bottom: $spacing-sm;
+}
+
+.actionText {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.actionBadge {
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  background-color: $color-error;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -$spacing-md;
+  margin-right: -$spacing-md;
+  align-self: flex-end;
+}
+
+.section {
+  margin: $spacing-md $page-padding;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionIcon {
+  font-size: $font-size-lg;
+}
+
+.sectionMore {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.sectionContent {
+  padding: $spacing-md 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md $spacing-lg;
+  transition: background-color $transition-fast;
+
+  &:active {
+    background-color: $color-bg-hover;
+  }
+}
+
+.menuIcon {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $color-primary-bg;
+  border-radius: $radius-md;
+  font-size: 32rpx;
+  margin-right: $spacing-md;
+}
+
+.menuIconOrange { background-color: $color-warning-bg; }
+.menuIconGreen { background-color: $color-success-bg; }
+.menuIconPurple { background-color: $color-secondary-bg; }
+.menuIconRed { background-color: $color-error-bg; }
+.menuIconCyan { background-color: $color-tertiary-bg; }
+
+.menuContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.menuTitle {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 4rpx;
+}
+
+.menuSubtitle {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.menuArrow {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: $spacing-sm;
+}
+
+.menuBadge {
+  padding: 2rpx 12rpx;
+  background-color: $color-primary-bg;
+  color: $color-primary;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-round;
+  margin-right: $spacing-sm;
+}
+
+.menuBadgeOrange {
+  background-color: $color-warning-bg;
+  color: $color-warning;
+}
+
+.menuBadgeGreen {
+  background-color: $color-success-bg;
+  color: $color-success;
+}
+
+.reviewMiniList {
+  padding: 0 $spacing-lg $spacing-md;
+}
+
+.reviewMiniItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.reviewMiniLeft {
+  flex: 1;
+  min-width: 0;
+  margin-right: $spacing-md;
+}
+
+.reviewMiniTitle {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+  margin-bottom: 6rpx;
+}
+
+.reviewMiniSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.satisfactionCard {
+  margin: 0 $spacing-lg $spacing-md;
+  padding: $spacing-md;
+  background: linear-gradient(135deg, $color-warning-bg 0%, $color-primary-bg 100%);
+  border-radius: $radius-md;
+}
+
+.satisfactionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.satisfactionTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.satisfactionStars {
+  display: flex;
+  gap: 4rpx;
+}
+
+.star {
+  font-size: $font-size-md;
+  color: $color-warning;
+}
+
+.satisfactionComment {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  @include text-ellipsis-multi(2);
+}
+
+.emptyNotice {
+  padding: $spacing-xl;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}

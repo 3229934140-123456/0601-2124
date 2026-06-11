@@ -1,0 +1,380 @@
+@import '../../styles/theme.scss';
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 200rpx;
+}
+
+.bannerCard {
+  margin: 24rpx;
+  padding: 48rpx 32rpx;
+  background: linear-gradient(160deg, #165dff 0%, #722ed1 50%, #eb2f96 100%);
+  border-radius: 32rpx;
+  color: #fff;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16rpx 40rpx rgba(22, 93, 255, 0.25);
+}
+
+.bannerCard::before {
+  content: '';
+  position: absolute;
+  width: 300rpx;
+  height: 300rpx;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+  top: -120rpx;
+  right: -80rpx;
+}
+
+.bannerCard::after {
+  content: '';
+  position: absolute;
+  width: 200rpx;
+  height: 200rpx;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+  bottom: -80rpx;
+  left: -40rpx;
+}
+
+.bannerEmoji {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.bannerTitle {
+  font-size: 40rpx;
+  font-weight: 700;
+  margin-bottom: 12rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.bannerDesc {
+  font-size: 28rpx;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+.dealInfo {
+  margin: 0 24rpx 24rpx;
+  padding: 28rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: $shadow-sm;
+}
+
+.dealTitle {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.dealGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+}
+
+.dealCell {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.dealLabel {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+}
+
+.dealValue {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.sectionCard {
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx 28rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: $shadow-sm;
+}
+
+.sectionTitle {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle em {
+  font-style: normal;
+  font-size: 24rpx;
+  color: #f53f3f;
+  font-weight: 400;
+}
+
+.subTitle {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+  margin-bottom: 28rpx;
+}
+
+.overallRating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 0 12rpx;
+}
+
+.overallStars {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.star {
+  font-size: 72rpx;
+  color: #e5e6eb;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.starActive {
+  color: #ffa940;
+  animation: starPop 0.3s ease;
+}
+
+@keyframes starPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.ratingText {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #ffa940;
+  margin-bottom: 8rpx;
+}
+
+.ratingDesc {
+  font-size: 26rpx;
+  color: $color-text-secondary;
+}
+
+.dimList {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+  padding-top: 12rpx;
+}
+
+.dimItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dimName {
+  font-size: 28rpx;
+  color: $color-text-primary;
+  width: 160rpx;
+}
+
+.dimStars {
+  display: flex;
+  gap: 10rpx;
+}
+
+.dimStar {
+  font-size: 44rpx;
+  color: #e5e6eb;
+}
+
+.dimStarActive {
+  color: #ffa940;
+}
+
+.dimValue {
+  font-size: 26rpx;
+  color: $color-primary;
+  font-weight: 600;
+  width: 80rpx;
+  text-align: right;
+}
+
+.quickTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.tagItem {
+  padding: 14rpx 28rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  background: $color-bg-light;
+  color: $color-text-secondary;
+  border: 2rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.tagItemActive {
+  background: linear-gradient(135deg, #e6f4ff 0%, #f0f5ff 100%);
+  color: $color-primary;
+  border-color: #91caff;
+  font-weight: 500;
+}
+
+.textareaWrap {
+  padding: 24rpx;
+  background: $color-bg-light;
+  border-radius: 20rpx;
+  border: 2rpx solid transparent;
+  transition: border-color 0.2s;
+}
+
+.textareaWrapFocus {
+  background: #fff;
+  border-color: $color-primary;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 200rpx;
+  font-size: 28rpx;
+  line-height: 1.7;
+  color: $color-text-primary;
+}
+
+.wordCount {
+  text-align: right;
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+  margin-top: 12rpx;
+}
+
+.uploadRow {
+  display: flex;
+  gap: 16rpx;
+  flex-wrap: wrap;
+  margin-top: 24rpx;
+}
+
+.uploadItem {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%);
+  border: 2rpx dashed #91caff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.uploadPlus {
+  font-size: 48rpx;
+  color: $color-primary;
+  line-height: 1;
+}
+
+.uploadText {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+}
+
+.anonymousRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8rpx;
+}
+
+.anonymousLabel {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  font-size: 26rpx;
+  color: $color-text-secondary;
+}
+
+.switchBox {
+  width: 84rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  background: #e5e6eb;
+  padding: 4rpx;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+}
+
+.switchBoxOn {
+  background: $color-primary;
+  justify-content: flex-end;
+}
+
+.switchDot {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.15);
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.btnGhost {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 48rpx;
+  border: 2rpx solid #e5e6eb;
+  background: #fff;
+  color: $color-text-secondary;
+  font-size: 30rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnPrimary {
+  flex: 1.5;
+  height: 88rpx;
+  border-radius: 48rpx;
+  background: linear-gradient(135deg, #165dff 0%, #722ed1 100%);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(22, 93, 255, 0.25);
+}

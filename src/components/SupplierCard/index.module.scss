@@ -1,0 +1,247 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.left {
+  flex: 1;
+  margin-right: $spacing-md;
+}
+
+.supplierName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.stars {
+  display: flex;
+}
+
+.star {
+  font-size: 24rpx;
+  line-height: 1;
+}
+
+.starfull {
+  color: $color-warning;
+}
+
+.starhalf {
+  color: $color-warning;
+  opacity: 0.6;
+}
+
+.starempty {
+  color: $color-text-disabled;
+}
+
+.ratingValue {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-warning;
+}
+
+.dealCount {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.matchScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-tag;
+  border-radius: $radius-md;
+}
+
+.matchScoreValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  line-height: 1.1;
+}
+
+.matchScoreLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.productInfo {
+  padding: $spacing-md 0;
+  border-top: 1rpx solid $color-divider;
+  border-bottom: 1rpx solid $color-divider;
+  margin-bottom: $spacing-md;
+}
+
+.productName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.productDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  @include text-ellipsis-multi(2);
+}
+
+.tagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.tag {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-sm;
+  background-color: $color-primary-bg;
+}
+
+.tagText {
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+.certTag {
+  background-color: $color-success-bg;
+}
+
+.certText {
+  font-size: $font-size-xs;
+  color: $color-success;
+  font-weight: $font-weight-medium;
+}
+
+.infoRow {
+  display: flex;
+  gap: $spacing-xl;
+  margin-bottom: $spacing-md;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.infoLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.infoValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.priceInfo {
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+}
+
+.priceLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.priceValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+}
+
+.priceUnit {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.actions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.actionBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  height: $button-height-sm;
+  border-radius: $radius-button;
+  background-color: $color-bg-hover;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.favoriteBtn {
+  background-color: $color-bg-hover;
+}
+
+.favorited {
+  background-color: $color-error-bg;
+}
+
+.actionIcon {
+  font-size: 28rpx;
+  color: $color-text-secondary;
+}
+
+.iconFavorited {
+  color: $color-error;
+}
+
+.actionText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}

@@ -1,0 +1,304 @@
+@import '../../styles/theme.scss';
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 200rpx;
+}
+
+.headerBanner {
+  background: $gradient-primary;
+  padding: 48rpx 32rpx 64rpx;
+  color: #fff;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.demandCode {
+  font-size: 24rpx;
+  opacity: 0.85;
+}
+
+.titleText {
+  font-size: 40rpx;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 24rpx;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16rpx 24rpx;
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.budgetBadge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  font-weight: 600;
+}
+
+.contentSection {
+  margin-top: -32rpx;
+  padding: 0 24rpx;
+}
+
+.card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: $shadow-sm;
+}
+
+.sectionTitle {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.titleDot {
+  width: 8rpx;
+  height: 28rpx;
+  background: $color-primary;
+  border-radius: 4rpx;
+}
+
+.descText {
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: $color-text-secondary;
+}
+
+.tagsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.tagItem {
+  padding: 12rpx 24rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  background: $color-bg-light;
+  color: $color-text-secondary;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24rpx;
+}
+
+.infoCell {
+  background: $color-bg-light;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+}
+
+.infoLabel {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+  margin-bottom: 8rpx;
+}
+
+.infoValue {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 20rpx 24rpx;
+  background: $color-bg-light;
+  border-radius: 16rpx;
+}
+
+.fileIcon {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #e6f4ff 0%, #bae0ff 100%);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 28rpx;
+  color: $color-text-primary;
+  font-weight: 500;
+  margin-bottom: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileMeta {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+}
+
+.matchSummary {
+  display: flex;
+  gap: 20rpx;
+}
+
+.matchStat {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx;
+  background: $color-bg-light;
+  border-radius: 16rpx;
+}
+
+.statNum {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: $color-primary;
+  margin-bottom: 8rpx;
+}
+
+.statNumPurple {
+  color: $color-secondary;
+}
+
+.statLabel {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+}
+
+.timeline {
+  padding-left: 8rpx;
+}
+
+.timelineItem {
+  display: flex;
+  gap: 24rpx;
+  padding-bottom: 32rpx;
+  position: relative;
+}
+
+.timelineItem:last-child {
+  padding-bottom: 0;
+}
+
+.timelineItem:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 18rpx;
+  top: 56rpx;
+  bottom: 0;
+  width: 2rpx;
+  background: #eee;
+}
+
+.timelineDot {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: $color-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20rpx;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.timelineDotGray {
+  background: #ccc;
+}
+
+.timelineContent {
+  flex: 1;
+  padding-top: 4rpx;
+}
+
+.timelineTitle {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+}
+
+.timelineTime {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.btnGhost {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 48rpx;
+  border: 2rpx solid #e5e6eb;
+  background: #fff;
+  color: $color-text-secondary;
+  font-size: 30rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnPrimary {
+  flex: 1.5;
+  height: 88rpx;
+  border-radius: 48rpx;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(22, 93, 255, 0.25);
+}

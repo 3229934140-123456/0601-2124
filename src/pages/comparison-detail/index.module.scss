@@ -1,0 +1,318 @@
+@import '../../styles/theme.scss';
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 180rpx;
+}
+
+.headerCard {
+  margin: 24rpx;
+  padding: 32rpx;
+  background: $gradient-primary;
+  border-radius: 24rpx;
+  color: #fff;
+  box-shadow: 0 12rpx 32rpx rgba(22, 93, 255, 0.2);
+}
+
+.demandTitle {
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-bottom: 16rpx;
+  line-height: 1.4;
+}
+
+.demandMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx 20rpx;
+  font-size: 26rpx;
+  opacity: 0.9;
+  margin-bottom: 24rpx;
+}
+
+.metaBadge {
+  padding: 6rpx 16rpx;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8rpx;
+}
+
+.summaryRow {
+  display: flex;
+  gap: 16rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx solid rgba(255,255,255,0.2);
+}
+
+.summaryItem {
+  flex: 1;
+  text-align: center;
+}
+
+.summaryNum {
+  font-size: 40rpx;
+  font-weight: 800;
+  margin-bottom: 4rpx;
+}
+
+.summaryLabel {
+  font-size: 24rpx;
+  opacity: 0.85;
+}
+
+.filterBar {
+  display: flex;
+  gap: 12rpx;
+  padding: 0 24rpx 20rpx;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.filterChip {
+  flex-shrink: 0;
+  padding: 12rpx 24rpx;
+  border-radius: 32rpx;
+  background: #fff;
+  font-size: 26rpx;
+  color: $color-text-secondary;
+  box-shadow: $shadow-sm;
+}
+
+.filterChipActive {
+  background: $gradient-primary;
+  color: #fff;
+}
+
+.compareSection {
+  padding: 0 24rpx;
+}
+
+.compareCard {
+  background: #fff;
+  border-radius: 24rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+}
+
+.compareHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 28rpx;
+  background: linear-gradient(135deg, #f9f0ff 0%, #f0f5ff 100%);
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.supplierShort {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.supplierLogo {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 12rpx;
+  background: linear-gradient(135deg, #e6f4ff 0%, #f0f5ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+}
+
+.supplierName {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.scoreBadge {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #fff;
+}
+
+.compareBody {
+  padding: 24rpx 28rpx;
+}
+
+.compareRow {
+  display: flex;
+  padding: 18rpx 0;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.compareRow:last-child {
+  border-bottom: none;
+}
+
+.rowLabel {
+  width: 180rpx;
+  flex-shrink: 0;
+  font-size: 26rpx;
+  color: $color-text-tertiary;
+  padding-right: 16rpx;
+}
+
+.rowValue {
+  flex: 1;
+  font-size: 28rpx;
+  color: $color-text-primary;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.highlight {
+  color: $color-primary;
+  font-weight: 600;
+}
+
+.highlightWarn {
+  color: #ff7d00;
+  font-weight: 600;
+}
+
+.highlightDanger {
+  color: #f53f3f;
+  font-weight: 600;
+}
+
+.highlightSuccess {
+  color: #00b42a;
+  font-weight: 600;
+}
+
+.bestBadge {
+  display: inline-block;
+  padding: 2rpx 12rpx;
+  font-size: 20rpx;
+  background: linear-gradient(135deg, #ff7d00 0%, #ff9a2e 100%);
+  color: #fff;
+  border-radius: 8rpx;
+  margin-left: 8rpx;
+  font-weight: 600;
+}
+
+.progressWrap {
+  flex: 1;
+  height: 16rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  overflow: hidden;
+  margin-right: 16rpx;
+}
+
+.progressBar {
+  height: 100%;
+  border-radius: 8rpx;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 24rpx;
+  color: $color-text-secondary;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.tagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.valueTag {
+  padding: 6rpx 14rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  background: $color-bg-light;
+  color: $color-text-secondary;
+}
+
+.valueTagBlue {
+  background: #e6f4ff;
+  color: $color-primary;
+}
+
+.recommendCard {
+  margin: 0 24rpx 24rpx;
+  padding: 28rpx;
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
+  border-radius: 24rpx;
+  border: 2rpx solid #ffd591;
+}
+
+.recommendHeader {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.recommendIcon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff7d00 0%, #ff9a2e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+}
+
+.recommendTitle {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #d46b08;
+}
+
+.recommendText {
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #ad6800;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.btnGhost {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 48rpx;
+  border: 2rpx solid #e5e6eb;
+  background: #fff;
+  color: $color-text-secondary;
+  font-size: 30rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnPrimary {
+  flex: 1.5;
+  height: 88rpx;
+  border-radius: 48rpx;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(22, 93, 255, 0.25);
+}

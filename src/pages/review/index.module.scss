@@ -1,0 +1,418 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: 0 $page-padding;
+  padding-bottom: $spacing-xl;
+  background-color: $color-bg-page;
+}
+
+.summaryCards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin: $spacing-lg 0;
+}
+
+.summaryItem {
+  flex: 1;
+  min-width: 140rpx;
+  padding: $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  text-align: center;
+}
+
+.summaryValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1.2;
+  margin-bottom: 4rpx;
+}
+
+.summaryLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.summaryValueGreen { color: $color-success; }
+.summaryValueOrange { color: $color-warning; }
+.summaryValuePurple { color: $color-secondary; }
+.summaryValueRed { color: $color-error; }
+
+.tabsRow {
+  display: flex;
+  padding: $spacing-sm 0;
+  margin-bottom: $spacing-md;
+  overflow-x: auto;
+  @include scroll-x-container;
+  gap: $spacing-md;
+}
+
+.tabChip {
+  @include scroll-x-item(auto);
+  display: inline-flex;
+  padding: $spacing-sm $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+  box-shadow: $shadow-card;
+  transition: all $transition-fast;
+}
+
+.tabChipActive {
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.reviewCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.reviewDemand {
+  flex: 1;
+  margin-right: $spacing-md;
+}
+
+.reviewDemandTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  margin-bottom: 8rpx;
+}
+
+.reviewDemandSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.reviewMatchScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-success-bg;
+  border-radius: $radius-md;
+}
+
+.reviewScoreValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-success;
+  line-height: 1.1;
+}
+
+.reviewScoreLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 2rpx;
+}
+
+.supplierInfo {
+  margin-bottom: $spacing-md;
+}
+
+.supplierNameRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.supplierName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-right: $spacing-sm;
+}
+
+.productName {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-md;
+}
+
+.quoteRow {
+  display: flex;
+  gap: $spacing-lg;
+  padding: $spacing-md;
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+}
+
+.quoteItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.quoteLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.quoteValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.quotePrice {
+  color: $color-error;
+  font-size: $font-size-lg;
+}
+
+.reviewNotes {
+  padding: $spacing-md;
+  background-color: $color-warning-bg;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+}
+
+.notesLabel {
+  font-size: $font-size-xs;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+  margin-bottom: 4rpx;
+}
+
+.notesText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.statusActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.statusBtn {
+  @include button-reset;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  background-color: $color-bg-hover;
+  color: $color-text-secondary;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.statusBtnShortlisted {
+  background-color: $color-primary-bg;
+  color: $color-primary;
+}
+
+.statusBtnNegotiating {
+  background-color: $color-warning-bg;
+  color: $color-warning;
+}
+
+.statusBtnWon {
+  background-color: $color-success-bg;
+  color: $color-success;
+}
+
+.statusBtnRejected {
+  background-color: $color-error-bg;
+  color: $color-error;
+}
+
+.actionRow {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.actionBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-sm;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  background-color: $color-bg-hover;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.actionBtnPrimary {
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.generateCompareBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  background: $gradient-secondary;
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  margin-top: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.99);
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl * 3 $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  margin-top: $spacing-xl;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.emptyDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  text-align: center;
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-lg;
+}
+
+.emptyBtn {
+  @include button-reset;
+  padding: 0 $spacing-xl;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.modalMask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 650rpx;
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  max-height: 80vh;
+}
+
+.modalTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+}
+
+.modalInput {
+  width: 100%;
+  min-height: 160rpx;
+  padding: $spacing-md;
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: $line-height-loose;
+  box-sizing: border-box;
+  margin-bottom: $spacing-lg;
+}
+
+.modalRow {
+  margin-bottom: $spacing-lg;
+}
+
+.modalLabel {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.modalActions {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.modalBtnCancel {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background-color: $color-bg-hover;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.modalBtnConfirm {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}

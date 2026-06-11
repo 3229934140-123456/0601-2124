@@ -1,0 +1,411 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background-color: $color-bg-page;
+}
+
+.searchBar {
+  padding: $spacing-md $page-padding;
+  background-color: $color-bg-card;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.searchInput {
+  display: flex;
+  align-items: center;
+  height: 72rpx;
+  padding: 0 $spacing-md;
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+}
+
+.searchIcon {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  margin-right: $spacing-sm;
+}
+
+.searchText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.tabsBar {
+  display: flex;
+  padding: 0 $page-padding;
+  background-color: $color-bg-card;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.tabItem {
+  position: relative;
+  padding: $spacing-md $spacing-lg;
+}
+
+.tabText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.tabCount {
+  display: inline-block;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  margin-left: 6rpx;
+  background-color: $color-error-bg;
+  color: $color-error;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-round;
+  text-align: center;
+  line-height: 32rpx;
+}
+
+.tabItemActive {
+  .tabText {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: $spacing-lg;
+    right: $spacing-lg;
+    height: 4rpx;
+    background: $gradient-primary;
+    border-radius: 2rpx;
+  }
+}
+
+.conversationList {
+  padding: $spacing-md $page-padding;
+}
+
+.convCard {
+  display: flex;
+  padding: $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+.avatarWrap {
+  position: relative;
+  margin-right: $spacing-md;
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-xl;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: $font-weight-semibold;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+}
+
+.unreadBadge {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  background-color: $color-error;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-bold;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(245, 63, 63, 0.3);
+}
+
+.convContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.convHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.convName {
+  flex: 1;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  margin-right: $spacing-sm;
+}
+
+.convTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.convDemand {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  margin-bottom: 8rpx;
+  @include text-ellipsis;
+  font-weight: $font-weight-medium;
+}
+
+.convLastMsg {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis;
+  line-height: $line-height-normal;
+}
+
+.chatPage {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: $color-bg-page;
+}
+
+.chatHeader {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md $page-padding;
+  background-color: $color-bg-card;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.backBtn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-xl;
+  color: $color-text-secondary;
+  margin-right: $spacing-sm;
+}
+
+.chatHeaderInfo {
+  flex: 1;
+}
+
+.chatHeaderName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.chatHeaderSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.chatActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-round;
+  background-color: $color-bg-hover;
+  margin-left: $spacing-sm;
+  font-size: $font-size-lg;
+}
+
+.chatMessages {
+  flex: 1;
+  padding: $spacing-lg $page-padding;
+  overflow-y: auto;
+}
+
+.msgDateDivider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: $spacing-lg 0;
+}
+
+.msgDateLine {
+  flex: 1;
+  height: 1rpx;
+  background-color: $color-divider;
+}
+
+.msgDateText {
+  padding: 0 $spacing-md;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.messageRow {
+  display: flex;
+  margin-bottom: $spacing-lg;
+}
+
+.messageRowMe {
+  flex-direction: row-reverse;
+}
+
+.msgAvatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  flex-shrink: 0;
+}
+
+.msgAvatarMe {
+  background: linear-gradient(135deg, $color-secondary 0%, $color-secondary-light 100%);
+  margin-left: $spacing-sm;
+}
+
+.msgAvatarOther {
+  background: $gradient-primary;
+  margin-right: $spacing-sm;
+}
+
+.msgBody {
+  max-width: 70%;
+  display: flex;
+  flex-direction: column;
+}
+
+.msgBodyMe {
+  align-items: flex-end;
+}
+
+.msgBubble {
+  padding: $spacing-md;
+  border-radius: $radius-lg;
+  font-size: $font-size-sm;
+  line-height: $line-height-loose;
+  word-break: break-all;
+}
+
+.msgBubbleOther {
+  background-color: $color-bg-card;
+  color: $color-text-primary;
+  border-top-left-radius: 8rpx;
+  box-shadow: $shadow-card;
+}
+
+.msgBubbleMe {
+  background: $gradient-primary;
+  color: $color-text-white;
+  border-top-right-radius: 8rpx;
+}
+
+.msgTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 8rpx;
+}
+
+.chatInputBar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom));
+  background-color: $color-bg-card;
+  border-top: 1rpx solid $color-divider;
+}
+
+.inputIconBtn {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-round;
+  background-color: $color-bg-hover;
+  font-size: $font-size-xl;
+  color: $color-text-secondary;
+  flex-shrink: 0;
+}
+
+.chatInput {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 $spacing-md;
+  background-color: $color-bg-hover;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.sendBtn {
+  @include button-reset;
+  height: 72rpx;
+  padding: 0 $spacing-lg;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  flex-shrink: 0;
+}
+
+.emptyChat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl * 3 $spacing-lg;
+}
+
+.emptyIcon {
+  font-size: 160rpx;
+  margin-bottom: $spacing-lg;
+  opacity: 0.5;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-md;
+}
+
+.emptyBtn {
+  @include button-reset;
+  padding: 0 $spacing-xl;
+  height: $button-height-md;
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+}

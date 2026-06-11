@@ -1,43 +1,38 @@
 import { useState } from 'react'
-import { View, Text, ScrollView, useRouter } from '@tarojs/components'
+import { View, Text, ScrollView } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { useStore } from '../../store'
-import { mockReviews } from '../../data/mock'
-import { getDaysRemaining, formatBudget, formatPrice } from '../../utils'
-import StatusTag from '../../components/StatusTag'
+import { useAppStore } from '@/store'
+import { DemandStatusMap } from '@/types'
+import { getDaysRemaining, formatBudget } from '@/utils'
+import StatusTag from '@/components/StatusTag'
 import styles from './index.module.scss'
 
 const DemandDetailPage = () => {
-  const router = useRouter()
-  const { demandId } = router.params
-  const { demands, suppliers, reviews } = useStore()
-  const [demand, setDemand] = useState<any>(null)
+  const demands = useAppStore(state => state.demands)
+  const reviewItems = useAppStore(state => state.reviewItems)
+  const currentDemand = useAppStore(state => state.currentDemand)
+  const [demand, setDemand] = useState(currentDemand)
 
   useDidShow(() => {
-    const found = demands.find(d => d.id === demandId) || demands[0]
-    setDemand(found)
+    if (currentDemand) {
+      setDemand(currentDemand)
+      return
+    }
+    const params = Taro.getCurrentInstance().router?.params
+    const id = params?.id
+    if (id) {
+      const found = demands.find(d => d.id === id)
+      if (found) setDemand(found)
+    }
   })
 
   if (!demand) return null
 
-  const matchedCount = suppliers.filter(s => {
-    if (demand.industry && s.industries?.includes(demand.industry)) return true
-    return Math.random() > 0.4
-  }).length || 5
-
-  const relatedReviews = reviews.filter(r => r.demandId === demand.id) || mockReviews.filter(r => r.demandId === demand.id)
-  const respondedCount = relatedReviews.length || 3
-
-  const statusTagMap: Record<string, { label: string; color: string; bgColor: string }> = {
-    draft: { label: '草稿', color: '#86909c', bgColor: 'rgba(134,144,156,0.1)' },
-    published: { label: '已发布', color: '#165dff', bgColor: 'rgba(22,93,255,0.1)' },
-    matching: { label: '匹配中', color: '#722ed1', bgColor: 'rgba(114,46,209,0.1)' },
-    reviewing: { label: '评审中', color: '#ff7d00', bgColor: 'rgba(255,125,0,0.1)' },
-    negotiating: { label: '商谈中', color: '#13c2c2', bgColor: 'rgba(19,194,194,0.1)' },
-    completed: { label: '已成交', color: '#00b42a', bgColor: 'rgba(0,180,42,0.1)' },
-    expired: { label: '已过期', color: '#f53f3f', bgColor: 'rgba(245,63,63,0.1)' },
-  }
-  const statusInfo = statusTagMap[demand.status] || statusTagMap.draft
+  const statusInfo = DemandStatusMap[demand.status] || DemandStatusMap.draft
+  const relatedReviews = reviewItems.filter(r => r.demandId === demand.id)
+  const matchedCount = demand.matchedCount
+  const respondedCount = relatedReviews.length || demand.responseCount
+  const shortlistedCount = relatedReviews.filter(r => r.reviewStatus === 'shortlisted').length
 
   const handleGoMatch = () => {
     Taro.switchTab({ url: '/pages/match/index' })
@@ -51,8 +46,8 @@ const DemandDetailPage = () => {
     <ScrollView scrollY className={styles.page}>
       <View className={styles.headerBanner}>
         <View className={styles.statusRow}>
-          <Text className={styles.demandCode}>需求编号：{demand.code}</Text>
-          <StatusTag label={statusInfo.label} color={statusInfo.color} bgColor={statusInfo.bgColor} size="small" />
+          <Text className={styles.demandCode}>需求编号：{demand.id}</Text>
+          <StatusTag label={statusInfo.label} color={statusInfo.color} size="small" />
         </View>
         <Text className={styles.titleText}>{demand.title}</Text>
         <View className={styles.metaRow}>
@@ -87,33 +82,28 @@ const DemandDetailPage = () => {
             </View>
             <View className={styles.infoCell}>
               <Text className={styles.infoLabel}>更新频率</Text>
-              <Text className={styles.infoValue}>{demand.frequency}</Text>
+              <Text className={styles.infoValue}>{demand.updateFrequency}</Text>
             </View>
             <View className={styles.infoCell}>
               <Text className={styles.infoLabel}>样本范围</Text>
               <Text className={styles.infoValue}>{demand.sampleScope}</Text>
             </View>
           </View>
-          <View className={styles.tagsWrap} style={{ marginTop: 24 }}>
-            {demand.tags?.map((tag, idx) => (
-              <View key={idx} className={styles.tagItem}>{tag}</View>
-            ))}
-          </View>
         </View>
 
-        {demand.files && demand.files.length > 0 && (
+        {demand.supplements && demand.supplements.length > 0 && (
           <View className={styles.card}>
             <View className={styles.sectionTitle}>
               <View className={styles.titleDot} />
               <Text>补充说明文件</Text>
             </View>
             <View className={styles.fileList}>
-              {demand.files.map((file, idx) => (
+              {demand.supplements.map((file, idx) => (
                 <View key={idx} className={styles.fileItem}>
                   <View className={styles.fileIcon}>📄</View>
                   <View className={styles.fileInfo}>
                     <Text className={styles.fileName}>{file.name}</Text>
-                    <Text className={styles.fileMeta}>{file.size} · 上传于 {file.uploadedAt}</Text>
+                    <Text className={styles.fileMeta}>{file.size} · 上传于 {file.uploadTime}</Text>
                   </View>
                 </View>
               ))}
@@ -136,7 +126,7 @@ const DemandDetailPage = () => {
               <Text className={styles.statLabel}>已响应</Text>
             </View>
             <View className={styles.matchStat}>
-              <Text className={styles.statNum} style={{ color: '#ff7d00' }}>{relatedReviews.filter(r => r.status === 'shortlisted').length || 2}</Text>
+              <Text className={styles.statNum} style={{ color: '#ff7d00' }}>{shortlistedCount}</Text>
               <Text className={styles.statLabel}>已入围</Text>
             </View>
           </View>

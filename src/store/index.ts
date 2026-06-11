@@ -21,6 +21,8 @@ interface AppState {
   updateDemand: (id: string, updates: Partial<DataDemand>) => void
   toggleFavorite: (supplierId: string) => void
   isFavorite: (supplierId: string) => boolean
+  addConversation: (conv: Conversation) => void
+  addReviewItem: (review: ReviewItem) => void
   updateReviewStatus: (reviewId: string, status: ReviewItem['reviewStatus'], notes?: string) => void
   updateReviewQuote: (reviewId: string, price: number, method: string, cycle?: string) => void
   addChatMessage: (conversationId: string, content: string) => void
@@ -66,6 +68,59 @@ export const useAppStore = create<AppState>((set, get) => ({
   }),
 
   isFavorite: (supplierId) => get().favorites.includes(supplierId),
+
+  addConversation: (conv) => set((state) => {
+    const exists = state.conversations.find(c => c.supplierId === conv.supplierId && c.demandId === conv.demandId)
+    if (exists) return state
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    const newConv: Conversation = {
+      id: conv.id || `CONV_${Date.now()}`,
+      supplierId: conv.supplierId,
+      supplierName: conv.supplierName,
+      avatarId: conv.avatarId || Math.floor(Math.random() * 9) + 1,
+      demandId: conv.demandId,
+      demandTitle: conv.demandTitle,
+      lastMessage: conv.lastMessage || '您好，我对贵司的数据产品很感兴趣，想详细了解一下。',
+      lastMessageTime: conv.lastMessageTime || now,
+      unreadCount: conv.unreadCount ?? 1,
+    }
+    const newMsg: ChatMessage = {
+      id: `MSG_${Date.now()}`,
+      conversationId: newConv.id,
+      sender: 'me',
+      content: newConv.lastMessage,
+      type: 'text',
+      timestamp: newConv.lastMessageTime,
+    }
+    return {
+      conversations: [newConv, ...state.conversations],
+      chatMessages: [...state.chatMessages, newMsg],
+    }
+  }),
+
+  addReviewItem: (review) => set((state) => {
+    const exists = state.reviewItems.find(r => r.supplierId === review.supplierId && r.demandId === review.demandId)
+    if (exists) return state
+    const now = new Date().toISOString().split('T')[0]
+    const newReview: ReviewItem = {
+      id: review.id || `REV_${Date.now()}`,
+      demandId: review.demandId,
+      demandTitle: review.demandTitle,
+      supplierId: review.supplierId,
+      supplierName: review.supplierName,
+      productName: review.productName,
+      matchScore: review.matchScore,
+      quotePrice: review.quotePrice,
+      deliveryMethod: review.deliveryMethod,
+      deliveryCycle: review.deliveryCycle,
+      reviewStatus: review.reviewStatus || 'pending',
+      reviewNotes: review.reviewNotes || '',
+      createdAt: review.createdAt || now,
+    }
+    return {
+      reviewItems: [newReview, ...state.reviewItems],
+    }
+  }),
 
   updateReviewStatus: (reviewId, status, notes) => set((state) => ({
     reviewItems: state.reviewItems.map(r =>

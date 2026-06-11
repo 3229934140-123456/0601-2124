@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { mockSuppliers, mockReviews } from '../../data/mock'
-import { formatPrice, getMatchScoreColor } from '../../utils'
+import { useAppStore } from '@/store'
+import { formatPrice, formatBudget, getMatchScoreColor } from '@/utils'
 import styles from './index.module.scss'
 
 const ComparisonDetailPage = () => {
+  const reviewItems = useAppStore(state => state.reviewItems)
+  const suppliers = useAppStore(state => state.suppliers)
+  const demands = useAppStore(state => state.demands)
   const [activeFilter, setActiveFilter] = useState('all')
 
   const filters = [
@@ -15,29 +18,72 @@ const ComparisonDetailPage = () => {
     { key: 'service', label: '服务能力' },
   ]
 
-  const shortlisted = mockReviews.filter(r => r.status !== 'eliminated' && r.status !== 'pending')
-  const comparisonData = shortlisted.map(review => {
-    const supplier = mockSuppliers.find(s => s.id === review.supplierId) || mockSuppliers[0]
-    return {
-      id: review.id,
-      supplierId: review.supplierId,
-      name: supplier.name,
-      logo: supplier.logo,
-      matchScore: review.matchScore,
-      price: review.quoteAmount,
-      deliveryMethod: review.deliveryMethod,
-      deliveryCycle: review.deliveryCycle,
-      rating: supplier.rating,
-      responseTime: supplier.responseTime,
-      deliveryRate: supplier.deliveryRate,
-      transactionCount: supplier.transactionCount,
-      tags: supplier.tags,
-      reviewNote: review.reviewNote,
-    }
-  }).sort((a, b) => b.matchScore - a.matchScore)
+  const demandId = Taro.getCurrentInstance().router?.params?.demandId
 
-  const minPrice = Math.min(...comparisonData.map(c => c.price))
-  const highestScore = Math.max(...comparisonData.map(c => c.matchScore))
+  const activeDemand = useMemo(() => {
+    if (demandId) return demands.find(d => d.id === demandId)
+    const firstDemandId = reviewItems.find(r => ['shortlisted', 'negotiating', 'won'].includes(r.reviewStatus))?.demandId
+    return demands.find(d => d.id === firstDemandId) || demands[0]
+  }, [demandId, demands, reviewItems])
+
+  const shortlisted = useMemo(() =>
+    reviewItems.filter(r =>
+      r.demandId === (activeDemand?.id || '') &&
+      ['shortlisted', 'negotiating', 'won'].includes(r.reviewStatus)
+    ),
+    [reviewItems, activeDemand]
+  )
+
+  const comparisonData = useMemo(() =>
+    shortlisted.map(review => {
+      const supplier = suppliers.find(s => s.id === review.supplierId)
+      return {
+        id: review.id,
+        supplierId: review.supplierId,
+        name: review.supplierName,
+        logo: supplier?.name?.charAt(0) || '数',
+        matchScore: review.matchScore,
+        price: review.quotePrice,
+        deliveryMethod: review.deliveryMethod,
+        deliveryCycle: review.deliveryCycle,
+        rating: supplier?.rating || 4.5,
+        dataVolume: supplier?.dataVolume || '-',
+        updateFrequency: supplier?.updateFrequency || '-',
+        dealCount: supplier?.dealCount || 0,
+        tags: supplier?.tags || [],
+        reviewNotes: review.reviewNotes,
+        reviewStatus: review.reviewStatus,
+      }
+    }).sort((a, b) => b.matchScore - a.matchScore),
+    [shortlisted, suppliers]
+  )
+
+  const minPrice = comparisonData.length > 0 ? Math.min(...comparisonData.map(c => c.price)) : 0
+  const highestScore = comparisonData.length > 0 ? Math.max(...comparisonData.map(c => c.matchScore)) : 0
+
+  if (comparisonData.length < 2) {
+    return (
+      <ScrollView scrollY className={styles.page}>
+        <View className={styles.headerCard}>
+          <Text className={styles.demandTitle}>需求比对表</Text>
+        </View>
+        <View className={styles.recommendCard}>
+          <View className={styles.recommendHeader}>
+            <View className={styles.recommendIcon}>⚠️</View>
+            <Text className={styles.recommendTitle}>入围供应方不足</Text>
+          </View>
+          <Text className={styles.recommendText}>
+            当前入围供应方仅{comparisonData.length}家，至少需要2家入围供应方才能生成比对表。请返回评审清单，将更多供应方标记为"入围"状态。
+          </Text>
+        </View>
+        <View className={styles.bottomBar}>
+          <View className={styles.btnPrimary} onClick={() => Taro.switchTab({ url: '/pages/review/index' })}>
+            <Text>返回评审清单</Text>
+          </View>
+        </View>
+      </ScrollView>
+    )
+  }
 
   const handleExport = () => {
     Taro.showToast({ title: '比对表已导出到邮箱', icon: 'success' })
@@ -48,7 +94,7 @@ const ComparisonDetailPage = () => {
   }
 
   const renderProgress = (value, max, color) => {
-    const percent = (value / max) * 100
+    const percent = Math.min((value / max) * 100, 100)
     return (
       <View className={styles.rowValue}>
         <View className={styles.progressWrap}>
@@ -65,12 +111,12 @@ const ComparisonDetailPage = () => {
   return (
     <ScrollView scrollY className={styles.page}>
       <View className={styles.headerCard}>
-        <Text className={styles.demandTitle}>用户行为分析数据集采购需求</Text>
+        <Text className={styles.demandTitle}>{activeDemand?.title || '需求比对表'}</Text>
         <View className={styles.demandMeta}>
-          <Text className={styles.metaBadge}>🏢 互联网</Text>
-          <Text className={styles.metaBadge}>📍 全国</Text>
-          <Text className={styles.metaBadge}>📊 样本量2000万+</Text>
-          <Text className={styles.metaBadge}>💰 预算 20-50万</Text>
+          <Text className={styles.metaBadge}>🏢 {activeDemand?.industry || '-'}</Text>
+          <Text className={styles.metaBadge}>📍 {activeDemand?.region || '-'}</Text>
+          <Text className={styles.metaBadge}>📊 {activeDemand?.sampleScope || '-'}</Text>
+          <Text className={styles.metaBadge}>💰 预算 {formatBudget(activeDemand?.budgetMin || 0, activeDemand?.budgetMax || 0)}</Text>
         </View>
         <View className={styles.summaryRow}>
           <View className={styles.summaryItem}>
@@ -106,9 +152,9 @@ const ComparisonDetailPage = () => {
           <Text className={styles.recommendTitle}>智能推荐</Text>
         </View>
         <Text className={styles.recommendText}>
-          基于多维综合评分，建议优先选择「{comparisonData[0]?.name || '数智洞察科技'}」。
-          该供应商匹配度最高{highestScore}分，报价{formatPrice(comparisonData[0]?.price)}在预算范围内，
-          历史成交{comparisonData[0]?.transactionCount || 168}笔，按时交付率达{comparisonData[0]?.deliveryRate || 99}%，综合表现最优。
+          基于多维综合评分，建议优先选择「{comparisonData[0]?.name}」。
+          该供应商匹配度最高{highestScore}分，报价{formatPrice(comparisonData[0]?.price)}，
+          历史成交{comparisonData[0]?.dealCount}笔，综合表现最优。
         </Text>
       </View>
 
@@ -124,7 +170,7 @@ const ComparisonDetailPage = () => {
               </View>
               <View
                 className={styles.scoreBadge}
-                style={{ background: `linear-gradient(135deg, ${getMatchScoreColor(item.matchScore)} 0%, ${getMatchScoreColor(item.matchScore * 0.8)} 100%)` }}
+                style={{ background: `linear-gradient(135deg, ${getMatchScoreColor(item.matchScore)} 0%, ${getMatchScoreColor(Math.round(item.matchScore * 0.8))} 100%)` }}
               >
                 匹配 {item.matchScore}
               </View>
@@ -143,12 +189,12 @@ const ComparisonDetailPage = () => {
 
               <View className={styles.compareRow}>
                 <Text className={styles.rowLabel}>匹配度</Text>
-                {renderProgress(item.matchScore, 100, `linear-gradient(90deg, ${getMatchScoreColor(item.matchScore * 0.6)}, ${getMatchScoreColor(item.matchScore)})`)}
+                {renderProgress(item.matchScore, 100, `linear-gradient(90deg, ${getMatchScoreColor(Math.round(item.matchScore * 0.6))}, ${getMatchScoreColor(item.matchScore)})`)}
               </View>
 
               <View className={styles.compareRow}>
                 <Text className={styles.rowLabel}>交付方式</Text>
-                <Text className={styles.rowValue}>{item.deliveryMethod}</Text>
+                <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.deliveryMethod}</Text>
               </View>
 
               <View className={styles.compareRow}>
@@ -165,18 +211,13 @@ const ComparisonDetailPage = () => {
               </View>
 
               <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>响应时间</Text>
-                <Text className={`${styles.rowValue} ${styles.highlightWarn}`}>{item.responseTime}</Text>
-              </View>
-
-              <View className={styles.compareRow}>
-                <Text className={styles.rowLabel}>按时交付率</Text>
-                {renderProgress(item.deliveryRate, 100, 'linear-gradient(90deg, #73d13d, #389e0d)')}
+                <Text className={styles.rowLabel}>数据规模</Text>
+                <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.dataVolume}</Text>
               </View>
 
               <View className={styles.compareRow}>
                 <Text className={styles.rowLabel}>历史成交</Text>
-                <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.transactionCount}笔</Text>
+                <Text className={`${styles.rowValue} ${styles.highlight}`}>{item.dealCount}笔</Text>
               </View>
 
               <View className={styles.compareRow}>
@@ -188,11 +229,11 @@ const ComparisonDetailPage = () => {
                 </View>
               </View>
 
-              {item.reviewNote && (
+              {item.reviewNotes && (
                 <View className={styles.compareRow}>
                   <Text className={styles.rowLabel}>评审备注</Text>
                   <Text className={`${styles.rowValue}`} style={{ lineHeight: 1.7, color: '#595959' }}>
-                    {item.reviewNote}
+                    {item.reviewNotes}
                   </Text>
                 </View>
               )}

@@ -90,7 +90,8 @@ const ReviewPage: React.FC = () => {
       Taro.showToast({ title: '至少2家入围供应方可生成比对表', icon: 'none' })
       return
     }
-    Taro.navigateTo({ url: '/pages/comparison-detail/index' })
+    const demandId = shortlisted[0].demandId
+    Taro.navigateTo({ url: `/pages/comparison-detail/index?demandId=${demandId}` })
   }
 
   const goSatisfaction = (review: ReviewItem) => {

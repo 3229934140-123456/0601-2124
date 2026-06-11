@@ -35,7 +35,26 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier, showActions = tru
 
   const handleConsult = (e: React.MouseEvent) => {
     e.stopPropagation()
-    Taro.showToast({ title: '已发起咨询', icon: 'success' })
+    const conversations = useAppStore.getState().conversations
+    const existingConv = conversations.find(c => c.supplierId === supplier.id)
+    if (existingConv) {
+      Taro.showToast({ title: '已有该供应方的会话', icon: 'none' })
+      setTimeout(() => Taro.switchTab({ url: '/pages/communication/index' }), 800)
+    } else {
+      const activeDemand = useAppStore.getState().demands[0]
+      useAppStore.getState().addConversation({
+        id: `CONV_${Date.now()}`,
+        supplierId: supplier.id,
+        supplierName: supplier.name,
+        avatarId: Math.floor(Math.random() * 9) + 1,
+        demandId: activeDemand?.id || 'DEM001',
+        demandTitle: activeDemand?.title || '数据需求',
+        lastMessage: '您好，我对贵司的数据产品很感兴趣，想详细了解一下。',
+        lastMessageTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
+        unreadCount: 1,
+      })
+      Taro.showToast({ title: '已发起咨询', icon: 'success' })
+    }
   }
 
   return (

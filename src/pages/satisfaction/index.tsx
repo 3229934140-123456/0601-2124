@@ -1,29 +1,36 @@
 import { useState } from 'react'
 import { View, Text, ScrollView, Textarea } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
-import { useStore } from '../../store'
+import { useAppStore } from '@/store'
+import { formatPrice } from '@/utils'
 import styles from './index.module.scss'
 
 const SatisfactionPage = () => {
-  const { satisfactionRatings, addSatisfactionRating } = useStore()
+  const reviewItems = useAppStore(state => state.reviewItems)
+  const demands = useAppStore(state => state.demands)
+  const suppliers = useAppStore(state => state.suppliers)
+  const addSatisfactionRating = useAppStore(state => state.addSatisfactionRating)
+
   const [overall, setOverall] = useState(4)
   const [dimRatings, setDimRatings] = useState({
     dataQuality: 5,
-    priceReasonable: 4,
-    deliverySpeed: 5,
-    serviceAttitude: 4,
-    afterSales: 5,
+    priceReasonableness: 4,
+    deliveryTimeliness: 5,
+    serviceQuality: 4,
   })
-  const [tags, setTags] = useState<string[]>(['数据质量好', '交付准时'])
+  const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [anonymous, setAnonymous] = useState(false)
+  const [contextLoaded, setContextLoaded] = useState(false)
+  const [contextReview, setContextReview] = useState<any>(null)
+  const [contextDemand, setContextDemand] = useState<any>(null)
+  const [contextSupplier, setContextSupplier] = useState<any>(null)
 
   const dimensions = [
     { key: 'dataQuality', name: '数据质量' },
-    { key: 'priceReasonable', name: '价格合理' },
-    { key: 'deliverySpeed', name: '交付速度' },
-    { key: 'serviceAttitude', name: '服务态度' },
-    { key: 'afterSales', name: '售后支持' },
+    { key: 'priceReasonableness', name: '价格合理' },
+    { key: 'deliveryTimeliness', name: '交付速度' },
+    { key: 'serviceQuality', name: '服务态度' },
   ]
 
   const quickTags = [
@@ -35,13 +42,31 @@ const SatisfactionPage = () => {
   const ratingTexts = ['', '非常不满意', '不满意', '一般', '满意', '非常满意']
 
   useDidShow(() => {
-    if (satisfactionRatings.length > 0) {
-      const sr = satisfactionRatings[0]
-      setOverall(sr.overallRating)
-      setDimRatings(sr.dimensions || dimRatings)
-      setTags(sr.tags || tags)
-      setComment(sr.comment || '')
+    if (contextLoaded) return
+    const params = Taro.getCurrentInstance().router?.params
+    const reviewId = params?.reviewId
+    const demandId = params?.demandId
+    const supplierId = params?.supplierId
+
+    let review = reviewId ? reviewItems.find(r => r.id === reviewId) : null
+    if (!review && demandId && supplierId) {
+      review = reviewItems.find(r => r.demandId === demandId && r.supplierId === supplierId)
     }
+    if (!review && supplierId) {
+      review = reviewItems.find(r => r.supplierId === supplierId && r.reviewStatus === 'won')
+    }
+    if (!review) {
+      review = reviewItems.find(r => r.reviewStatus === 'won')
+    }
+
+    if (review) {
+      setContextReview(review)
+      const demand = demands.find(d => d.id === review.demandId)
+      const supplier = suppliers.find(s => s.id === review.supplierId)
+      setContextDemand(demand || null)
+      setContextSupplier(supplier || null)
+    }
+    setContextLoaded(true)
   })
 
   const toggleTag = (tag: string) => {
@@ -65,25 +90,38 @@ const SatisfactionPage = () => {
       Taro.showToast({ title: '请选择综合评分', icon: 'none' })
       return
     }
+
+    const review = contextReview
+    const demand = contextDemand
+    const supplier = contextSupplier
+
+    if (!review) {
+      Taro.showToast({ title: '未找到评价对象', icon: 'none' })
+      return
+    }
+
     addSatisfactionRating({
-      id: `sr_${Date.now()}`,
-      demandId: 'DD-20240115-001',
-      demandTitle: '用户行为分析数据集采购需求',
-      supplierId: 'SUP001',
-      supplierName: '数智洞察科技有限公司',
-      dealAmount: 268000,
-      dealDate: '2024-02-15',
+      id: `SAT_${Date.now()}`,
+      demandId: review.demandId,
+      demandTitle: review.demandTitle || demand?.title || '',
+      supplierId: review.supplierId,
+      supplierName: review.supplierName || supplier?.name || '',
       overallRating: overall,
-      dimensions: dimRatings,
-      tags,
-      comment,
-      anonymous,
-      images: [],
+      dataQuality: dimRatings.dataQuality,
+      deliveryTimeliness: dimRatings.deliveryTimeliness,
+      serviceQuality: dimRatings.serviceQuality,
+      priceReasonableness: dimRatings.priceReasonableness,
+      comment: comment,
       createdAt: new Date().toISOString().split('T')[0],
     })
     Taro.showToast({ title: '评价提交成功！', icon: 'success' })
     setTimeout(() => Taro.switchTab({ url: '/pages/mine/index' }), 1200)
   }
+
+  const dealTitle = contextDemand?.title || contextReview?.demandTitle || '数据需求'
+  const supplierName = contextSupplier?.name || contextReview?.supplierName || '供应方'
+  const dealAmount = contextReview?.quotePrice || contextSupplier?.price || 0
+  const dealDate = contextReview?.createdAt || ''
 
   return (
     <ScrollView scrollY className={styles.page}>
@@ -98,19 +136,19 @@ const SatisfactionPage = () => {
         <View className={styles.dealGrid}>
           <View className={styles.dealCell}>
             <Text className={styles.dealLabel}>需求名称</Text>
-            <Text className={styles.dealValue}>用户行为分析数据集</Text>
+            <Text className={styles.dealValue}>{dealTitle}</Text>
           </View>
           <View className={styles.dealCell}>
             <Text className={styles.dealLabel}>供应方</Text>
-            <Text className={styles.dealValue}>数智洞察科技</Text>
+            <Text className={styles.dealValue}>{supplierName}</Text>
           </View>
           <View className={styles.dealCell}>
             <Text className={styles.dealLabel}>成交金额</Text>
-            <Text className={styles.dealValue} style={{ color: '#f53f3f' }}>¥268,000</Text>
+            <Text className={styles.dealValue} style={{ color: '#f53f3f' }}>¥{formatPrice(dealAmount)}</Text>
           </View>
           <View className={styles.dealCell}>
             <Text className={styles.dealLabel}>成交日期</Text>
-            <Text className={styles.dealValue}>2024-02-15</Text>
+            <Text className={styles.dealValue}>{dealDate || '近期'}</Text>
           </View>
         </View>
       </View>

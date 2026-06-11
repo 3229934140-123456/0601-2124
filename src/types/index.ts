@@ -97,6 +97,7 @@ export interface ReviewItem {
   reviewStatus: ReviewStatus
   reviewNotes: string
   createdAt: string
+  updatedAt: string
   contractStatus?: 'pending' | 'signed' | 'rejected'
 }
 
@@ -162,3 +163,62 @@ export const DeliveryMethodOptions = [
   'API接口调用', '数据文件下载', '数据库直连', 'SaaS平台访问',
   '定制化开发', '私有化部署'
 ]
+
+// 决策记录类型
+export interface DecisionRecord {
+  id: string
+  reviewId: string
+  demandId: string
+  demandTitle: string
+  supplierId: string
+  supplierName: string
+  action: ReviewStatus
+  previousStatus: ReviewStatus
+  notes: string
+  operator: string
+  createdAt: string
+}
+
+// 合同跟进类型
+export type ContractStatus = 'pending' | 'signing' | 'signed' | 'rejected'
+
+export interface PaymentNode {
+  id: string
+  name: string
+  amount: number
+  deadline: string
+  status: 'pending' | 'paid'
+}
+
+export type AcceptanceStatus = 'pending' | 'accepted' | 'rejected'
+
+export const ContractStatusMap: Record<ContractStatus, { label: string; color: string }> = {
+  pending: { label: '待发起', color: '#86909C' },
+  signing: { label: '签署中', color: '#FF7D00' },
+  signed: { label: '已签署', color: '#00B42A' },
+  rejected: { label: '已驳回', color: '#F53F3F' }
+}
+
+export const AcceptanceStatusMap: Record<AcceptanceStatus, { label: string; color: string }> = {
+  pending: { label: '待验收', color: '#FF7D00' },
+  accepted: { label: '已验收', color: '#00B42A' },
+  rejected: { label: '验收不通过', color: '#F53F3F' }
+}
+
+export interface ContractFollowUp {
+  id: string
+  reviewId: string
+  demandId: string
+  demandTitle: string
+  supplierId: string
+  supplierName: string
+  contractStatus: ContractStatus
+  contractNo: string
+  signDate: string
+  totalAmount: number
+  paymentNodes: PaymentNode[]
+  acceptanceStatus: AcceptanceStatus
+  acceptanceDate: string
+  acceptanceResult: string
+  createdAt: string
+}

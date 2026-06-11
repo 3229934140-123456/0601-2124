@@ -9,7 +9,8 @@ export default defineAppConfig({
     'pages/supplier-detail/index',
     'pages/comparison-detail/index',
     'pages/satisfaction/index',
-    'pages/deal-review/index'
+    'pages/deal-review/index',
+    'pages/contract-followup/index'
   ],
   window: {
     backgroundTextStyle: 'light',

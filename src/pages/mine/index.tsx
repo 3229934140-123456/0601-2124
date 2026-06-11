@@ -4,7 +4,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import styles from './index.module.scss'
 import classnames from 'classnames'
 import { useAppStore } from '@/store'
-import { DemandStatusMap, ReviewStatusMap } from '@/types'
+import { DemandStatusMap, ReviewStatusMap, ContractStatusMap, AcceptanceStatusMap } from '@/types'
 import StatusTag from '@/components/StatusTag'
 import { formatPrice } from '@/utils'
 
@@ -14,6 +14,7 @@ const MinePage: React.FC = () => {
   const satisfactionRatings = useAppStore(state => state.satisfactionRatings)
   const favorites = useAppStore(state => state.favorites)
   const conversations = useAppStore(state => state.conversations)
+  const contractFollowUps = useAppStore(state => state.contractFollowUps)
 
   const stats = useMemo(() => {
     const totalDemands = demands.length
@@ -21,8 +22,9 @@ const MinePage: React.FC = () => {
     const completedDemands = demands.filter(d => d.status === 'completed').length
     const pendingReviews = reviewItems.filter(r => r.reviewStatus === 'pending').length
     const unreadMessages = conversations.reduce((sum, c) => sum + c.unreadCount, 0)
-    return { totalDemands, activeDemands, completedDemands, pendingReviews, unreadMessages, favoritesCount: favorites.length }
-  }, [demands, reviewItems, favorites, conversations])
+    const pendingContracts = contractFollowUps.filter(c => c.contractStatus !== 'signed').length
+    return { totalDemands, activeDemands, completedDemands, pendingReviews, unreadMessages, favoritesCount: favorites.length, pendingContracts }
+  }, [demands, reviewItems, favorites, conversations, contractFollowUps])
 
   const myRecentDemands = useMemo(() => demands.slice(0, 3), [demands])
   const pendingReviewList = useMemo(() => reviewItems.filter(r => r.reviewStatus === 'pending').slice(0, 2), [reviewItems])
@@ -157,6 +159,56 @@ const MinePage: React.FC = () => {
             ))
           ) : (
             <View className={styles.emptyNotice}>🎉 暂无待办事项，去看看新的匹配结果吧</View>
+          )}
+        </View>
+      </View>
+
+      <View className={styles.section}>
+        <View className={styles.sectionHeader}>
+          <View className={styles.sectionTitle}>
+            <Text className={styles.sectionIcon}>📄</Text>
+            合同跟进
+          </View>
+          <View className={styles.sectionMore} onClick={() => handleNavigate('review')}>
+            全部跟进 <Text>›</Text>
+          </View>
+        </View>
+        <View className={styles.sectionContent}>
+          {contractFollowUps.length > 0 ? (
+            contractFollowUps.slice(0, 3).map(contract => {
+              const statusInfo = ContractStatusMap[contract.contractStatus]
+              const pendingPayments = contract.paymentNodes.filter(n => n.status === 'pending').length
+              return (
+                <View
+                  key={contract.id}
+                  className={styles.contractItem}
+                  onClick={() => Taro.navigateTo({ url: `/pages/contract-followup/index?reviewId=${contract.reviewId}` })}
+                >
+                  <View className={styles.contractItemLeft}>
+                    <View className={styles.contractIcon}>📄</View>
+                    <View className={styles.contractItemInfo}>
+                      <Text className={styles.contractItemTitle}>{contract.demandTitle}</Text>
+                      <Text className={styles.contractItemSub}>{contract.supplierName}</Text>
+                      <View className={styles.contractItemTags}>
+                        <StatusTag label={statusInfo.label} color={statusInfo.color} size="small" />
+                        {contract.acceptanceStatus === 'pending' && contract.contractStatus === 'signed' && (
+                          <StatusTag label="待验收" color="#FF7D00" size="small" />
+                        )}
+                        {pendingPayments > 0 && (
+                          <StatusTag label={`${pendingPayments}笔待付款`} color="#FF7D00" size="small" />
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                  <View className={styles.contractItemRight}>
+                    <Text className={styles.contractItemAmount}>¥{formatPrice(contract.totalAmount)}</Text>
+                    <Text className={styles.contractItemArrow}>›</Text>
+                  </View>
+                </View>
+              )
+            })
+          ) : (
+            <View className={styles.emptyNotice}>📄 暂无合同跟进项，中标后可创建合同</View>
           )}
         </View>
       </View>

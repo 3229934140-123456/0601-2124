@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { View, Text, ScrollView, Textarea } from '@tarojs/components'
+import { View, Text, ScrollView, Textarea, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useAppStore } from '@/store'
 import { ReviewStatusMap, FrequencyOptions } from '@/types'
@@ -17,6 +17,9 @@ const ReviewPage = () => {
 
   const [selectedDemandId, setSelectedDemandId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [globalStatusFilter, setGlobalStatusFilter] = useState<string>('all')
+  const [rejectDemandFilter, setRejectDemandFilter] = useState<string>('all')
+  const [rejectKeyword, setRejectKeyword] = useState('')
 
   const [statusModalVisible, setStatusModalVisible] = useState(false)
   const [quoteModalVisible, setQuoteModalVisible] = useState(false)
@@ -82,6 +85,27 @@ const ReviewPage = () => {
     ).length
   }, [selectedDemandId, groupedReviews])
 
+  const rejectedReviews = useMemo(() => {
+    let list = reviewItems.filter(r => r.reviewStatus === 'rejected')
+    if (rejectDemandFilter !== 'all') {
+      list = list.filter(r => r.demandId === rejectDemandFilter)
+    }
+    if (rejectKeyword.trim()) {
+      const kw = rejectKeyword.trim().toLowerCase()
+      list = list.filter(r =>
+        r.reviewNotes?.toLowerCase().includes(kw) ||
+        r.supplierName?.toLowerCase().includes(kw) ||
+        r.demandTitle?.toLowerCase().includes(kw)
+      )
+    }
+    return list.sort((a, b) => b.updatedAt?.localeCompare(a.updatedAt || '') || 0)
+  }, [reviewItems, rejectDemandFilter, rejectKeyword])
+
+  const rejectedDemands = useMemo(() => {
+    const demandIds = [...new Set(reviewItems.filter(r => r.reviewStatus === 'rejected').map(r => r.demandId))]
+    return demandIds.map(id => demands.find(d => d.id === id)).filter(Boolean)
+  }, [reviewItems, demands])
+
   const backToGroups = () => {
     setSelectedDemandId(null)
     setStatusFilter('all')
@@ -145,6 +169,107 @@ const ReviewPage = () => {
     })
   }
 
+  const goToComparison = (review: any) => {
+    Taro.navigateTo({
+      url: `/pages/comparison-detail/index?demandId=${review.demandId}&highlightSupplierId=${review.supplierId}`
+    })
+  }
+
+  const globalStatusTabs = [
+    { key: 'all', label: '全部' },
+    { key: 'pending', label: '待评审' },
+    { key: 'shortlisted', label: '已入围' },
+    { key: 'won', label: '已中标' },
+    { key: 'rejected', label: '已淘汰' },
+  ]
+
+  const RejectedView = () => (
+    <View>
+      <View className={styles.searchBar}>
+        <Text className={styles.searchIcon}>🔍</Text>
+        <Input
+          className={styles.searchInput}
+          type="text"
+          placeholder="搜索供应方、淘汰原因..."
+          value={rejectKeyword}
+          onInput={(e: any) => setRejectKeyword(e.detail.value)}
+        />
+      </View>
+
+      {rejectedDemands.length > 0 && (
+        <View className={styles.demandFilterRow}>
+          <ScrollView scrollX className={styles.demandFilterScroll}>
+            <View
+              className={`${styles.demandFilterChip} ${rejectDemandFilter === 'all' ? styles.demandFilterChipActive : ''}`}
+              onClick={() => setRejectDemandFilter('all')}
+            >
+              <Text>全部</Text>
+            </View>
+            {rejectedDemands.map(d => (
+              <View
+                key={d!.id}
+                className={`${styles.demandFilterChip} ${rejectDemandFilter === d!.id ? styles.demandFilterChipActive : ''}`}
+                onClick={() => setRejectDemandFilter(d!.id)}
+              >
+                <Text className={styles.demandFilterChipText}>{d!.title}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      <View className={styles.resultHint}>
+        <Text className={styles.resultHintText}>共 {rejectedReviews.length} 条淘汰记录</Text>
+        <Text className={styles.resultHintDesc}>点击卡片可跳转比对表回看</Text>
+      </View>
+
+      {rejectedReviews.length === 0 ? (
+        <View className={styles.emptyState}>
+          <Text className={styles.emptyIcon}>📭</Text>
+          <Text className={styles.emptyTitle}>暂无淘汰记录</Text>
+          <Text className={styles.emptyDesc}>换个筛选条件试试吧</Text>
+        </View>
+      ) : (
+        rejectedReviews.map(review => {
+          const demand = demands.find(d => d.id === review.demandId)
+          return (
+            <View key={review.id} className={styles.rejectCard} onClick={() => goToComparison(review)}>
+              <View className={styles.rejectCardHeader}>
+                <View className={styles.rejectDemandInfo}>
+                  <Text className={styles.rejectDemandTitle}>{demand?.title || review.demandTitle}</Text>
+                  <StatusTag label="已淘汰" color="#f53f3f" size="small" />
+                </View>
+                <Text className={styles.rejectCardArrow}>→</Text>
+              </View>
+
+              <View className={styles.rejectSupplierRow}>
+                <Text className={styles.rejectSupplierName}>{review.supplierName}</Text>
+                <Text className={styles.rejectProduct}>{review.productName}</Text>
+              </View>
+
+              <View className={styles.rejectQuoteRow}>
+                <Text className={styles.rejectQuotePrice}>报价 ¥{formatPrice(review.quotePrice)}</Text>
+                <Text className={styles.rejectQuoteDelivery}>{review.deliveryMethod}</Text>
+              </View>
+
+              {review.reviewNotes && (
+                <View className={styles.rejectReasonBox}>
+                  <Text className={styles.rejectReasonLabel}>淘汰原因</Text>
+                  <Text className={styles.rejectReasonText}>{review.reviewNotes}</Text>
+                </View>
+              )}
+
+              <View className={styles.rejectCardFooter}>
+                <Text className={styles.rejectTime}>淘汰时间：{review.updatedAt || review.createdAt}</Text>
+                <Text className={styles.rejectViewCompare}>查看比对表 →</Text>
+              </View>
+            </View>
+          )
+        })
+      )}
+    </View>
+  )
+
   const GroupView = () => (
     <View>
       <View className={styles.summaryCards}>
@@ -172,75 +297,98 @@ const ReviewPage = () => {
         </View>
       </View>
 
-      <View className={styles.sectionSubtitle}>
-        <Text className={styles.sectionSubtitleText}>按需求分组</Text>
-        <Text className={styles.sectionSubtitleHint}>点击查看该需求下的供应方评审</Text>
-      </View>
-
-      {demandList.length === 0 ? (
-        <View className={styles.emptyState}>
-          <Text className={styles.emptyIcon}>📋</Text>
-          <Text className={styles.emptyTitle}>暂无评审项</Text>
-          <Text className={styles.emptyDesc}>去供应匹配页面找到合适的供应方，加入评审清单吧</Text>
-          <View className={styles.emptyBtn} onClick={() => Taro.switchTab({ url: '/pages/match/index' })}>
-            <Text>去寻找供应方</Text>
-          </View>
-        </View>
-      ) : (
-        demandList.map(({ demand, stats }) => (
-          <View key={demand!.id} className={styles.demandGroupCard} onClick={() => setSelectedDemandId(demand!.id)}>
-            <View className={styles.demandGroupHeader}>
-              <View className={styles.demandGroupTitleRow}>
-                <Text className={styles.demandGroupTitle}>{demand!.title}</Text>
-                <Text className={styles.demandGroupArrow}>→</Text>
-              </View>
-              <View className={styles.demandGroupMeta}>
-                <StatusTag label={ReviewStatusMap[demand!.status]?.label || '进行中'} color={ReviewStatusMap[demand!.status]?.color || '#165dff'} size="small" />
-                <Text className={styles.demandGroupCode}>{demand!.id}</Text>
-              </View>
-            </View>
-
-            <View className={styles.demandGroupInfo}>
-              <View className={styles.demandGroupInfoItem}>
-                <Text className={styles.demandGroupInfoLabel}>行业</Text>
-                <Text className={styles.demandGroupInfoValue}>{demand!.industry}</Text>
-              </View>
-              <View className={styles.demandGroupInfoItem}>
-                <Text className={styles.demandGroupInfoLabel}>预算</Text>
-                <Text className={styles.demandGroupInfoValue}>{formatBudget(demand!.budgetMin, demand!.budgetMax)}</Text>
-              </View>
-              <View className={styles.demandGroupInfoItem}>
-                <Text className={styles.demandGroupInfoLabel}>截止</Text>
-                <Text className={styles.demandGroupInfoValue}>{getDaysRemaining(demand!.deadline)}天后</Text>
-              </View>
-            </View>
-
-            <View className={styles.demandGroupStats}>
-              <View className={styles.demandGroupStat}>
-                <Text className={styles.demandGroupStatNum} style={{ color: '#165dff' }}>{stats.total}</Text>
-                <Text className={styles.demandGroupStatLabel}>候选</Text>
-              </View>
-              <View className={styles.demandGroupStat}>
-                <Text className={styles.demandGroupStatNum} style={{ color: '#ff7d00' }}>{stats.pending}</Text>
-                <Text className={styles.demandGroupStatLabel}>待评审</Text>
-              </View>
-              <View className={styles.demandGroupStat}>
-                <Text className={styles.demandGroupStatNum} style={{ color: '#722ed1' }}>{stats.shortlisted + stats.negotiating}</Text>
-                <Text className={styles.demandGroupStatLabel}>入围</Text>
-              </View>
-              <View className={styles.demandGroupStat}>
-                <Text className={styles.demandGroupStatNum} style={{ color: '#00b42a' }}>{stats.won}</Text>
-                <Text className={styles.demandGroupStatLabel}>中标</Text>
-              </View>
-            </View>
-
-            {stats.shortlisted + stats.negotiating >= 2 && (
-              <View className={styles.demandGroupCompareHint}>
-                <Text className={styles.demandGroupCompareText}>💡 已有 {stats.shortlisted + stats.negotiating} 家入围，可生成比对表</Text>
-              </View>
+      <View className={styles.globalTabsRow}>
+        {globalStatusTabs.map(tab => (
+          <View
+            key={tab.key}
+            className={`${styles.globalTabChip} ${globalStatusFilter === tab.key ? styles.globalTabChipActive : ''}`}
+            onClick={() => setGlobalStatusFilter(tab.key)}
+          >
+            <Text>{tab.label}</Text>
+            {tab.key === 'rejected' && reviewItems.filter(r => r.reviewStatus === 'rejected').length > 0 && (
+              <Text className={styles.globalTabBadge}>
+                {reviewItems.filter(r => r.reviewStatus === 'rejected').length}
+              </Text>
             )}
           </View>
-        ))
+        ))}
+      </View>
+
+      {globalStatusFilter === 'rejected' ? (
+        <RejectedView />
+      ) : (
+        <>
+          <View className={styles.sectionSubtitle}>
+            <Text className={styles.sectionSubtitleText}>按需求分组</Text>
+            <Text className={styles.sectionSubtitleHint}>点击查看该需求下的供应方评审</Text>
+          </View>
+
+          {demandList.length === 0 ? (
+            <View className={styles.emptyState}>
+              <Text className={styles.emptyIcon}>📋</Text>
+              <Text className={styles.emptyTitle}>暂无评审项</Text>
+              <Text className={styles.emptyDesc}>去供应匹配页面找到合适的供应方，加入评审清单吧</Text>
+              <View className={styles.emptyBtn} onClick={() => Taro.switchTab({ url: '/pages/match/index' })}>
+                <Text>去寻找供应方</Text>
+              </View>
+            </View>
+          ) : (
+            demandList.map(({ demand, stats }) => (
+              <View key={demand!.id} className={styles.demandGroupCard} onClick={() => setSelectedDemandId(demand!.id)}>
+                <View className={styles.demandGroupHeader}>
+                  <View className={styles.demandGroupTitleRow}>
+                    <Text className={styles.demandGroupTitle}>{demand!.title}</Text>
+                    <Text className={styles.demandGroupArrow}>→</Text>
+                  </View>
+                  <View className={styles.demandGroupMeta}>
+                    <StatusTag label={ReviewStatusMap[demand!.status]?.label || '进行中'} color={ReviewStatusMap[demand!.status]?.color || '#165dff'} size="small" />
+                    <Text className={styles.demandGroupCode}>{demand!.id}</Text>
+                  </View>
+                </View>
+
+                <View className={styles.demandGroupInfo}>
+                  <View className={styles.demandGroupInfoItem}>
+                    <Text className={styles.demandGroupInfoLabel}>行业</Text>
+                    <Text className={styles.demandGroupInfoValue}>{demand!.industry}</Text>
+                  </View>
+                  <View className={styles.demandGroupInfoItem}>
+                    <Text className={styles.demandGroupInfoLabel}>预算</Text>
+                    <Text className={styles.demandGroupInfoValue}>{formatBudget(demand!.budgetMin, demand!.budgetMax)}</Text>
+                  </View>
+                  <View className={styles.demandGroupInfoItem}>
+                    <Text className={styles.demandGroupInfoLabel}>截止</Text>
+                    <Text className={styles.demandGroupInfoValue}>{getDaysRemaining(demand!.deadline)}天后</Text>
+                  </View>
+                </View>
+
+                <View className={styles.demandGroupStats}>
+                  <View className={styles.demandGroupStat}>
+                    <Text className={styles.demandGroupStatNum} style={{ color: '#165dff' }}>{stats.total}</Text>
+                    <Text className={styles.demandGroupStatLabel}>候选</Text>
+                  </View>
+                  <View className={styles.demandGroupStat}>
+                    <Text className={styles.demandGroupStatNum} style={{ color: '#ff7d00' }}>{stats.pending}</Text>
+                    <Text className={styles.demandGroupStatLabel}>待评审</Text>
+                  </View>
+                  <View className={styles.demandGroupStat}>
+                    <Text className={styles.demandGroupStatNum} style={{ color: '#722ed1' }}>{stats.shortlisted + stats.negotiating}</Text>
+                    <Text className={styles.demandGroupStatLabel}>入围</Text>
+                  </View>
+                  <View className={styles.demandGroupStat}>
+                    <Text className={styles.demandGroupStatNum} style={{ color: '#00b42a' }}>{stats.won}</Text>
+                    <Text className={styles.demandGroupStatLabel}>中标</Text>
+                  </View>
+                </View>
+
+                {stats.shortlisted + stats.negotiating >= 2 && (
+                  <View className={styles.demandGroupCompareHint}>
+                    <Text className={styles.demandGroupCompareText}>💡 已有 {stats.shortlisted + stats.negotiating} 家入围，可生成比对表</Text>
+                  </View>
+                )}
+              </View>
+            ))
+          )}
+        </>
       )}
     </View>
   )

@@ -291,7 +291,8 @@ export const mockReviewItems: ReviewItem[] = [
     deliveryCycle: '合同签署后3个工作日',
     reviewStatus: 'shortlisted',
     reviewNotes: '数据覆盖度高，标签体系完善，价格在预算范围内，建议重点考虑',
-    createdAt: '2026-06-08'
+    createdAt: '2026-06-08 10:30',
+    updatedAt: '2026-06-09 14:20'
   },
   {
     id: 'REV002',
@@ -306,7 +307,8 @@ export const mockReviewItems: ReviewItem[] = [
     deliveryCycle: '付款后5个工作日',
     reviewStatus: 'rejected',
     reviewNotes: '行业匹配度一般，主要是零售数据，金融维度标签较少',
-    createdAt: '2026-06-07'
+    createdAt: '2026-06-07 09:15',
+    updatedAt: '2026-06-08 16:45'
   },
   {
     id: 'REV003',
@@ -321,7 +323,8 @@ export const mockReviewItems: ReviewItem[] = [
     deliveryCycle: '合同签署后7个工作日',
     reviewStatus: 'negotiating',
     reviewNotes: '地域和频率完全匹配，正在商谈数据字段细化和价格优惠',
-    createdAt: '2026-06-09'
+    createdAt: '2026-06-09 11:00',
+    updatedAt: '2026-06-10 10:30'
   },
   {
     id: 'REV004',
@@ -336,7 +339,8 @@ export const mockReviewItems: ReviewItem[] = [
     deliveryCycle: '开通后实时接入',
     reviewStatus: 'won',
     reviewNotes: '综合评分最高，技术方案评审通过，合同签署中',
-    createdAt: '2026-06-06',
+    createdAt: '2026-06-06 14:00',
+    updatedAt: '2026-06-08 09:00',
     contractStatus: 'pending'
   },
   {
@@ -352,7 +356,8 @@ export const mockReviewItems: ReviewItem[] = [
     deliveryCycle: '付款后立即开通',
     reviewStatus: 'won',
     reviewNotes: '已完成交付，项目验收通过',
-    createdAt: '2026-05-30',
+    createdAt: '2026-05-30 08:30',
+    updatedAt: '2026-06-05 15:20',
     contractStatus: 'signed'
   },
   {
@@ -368,7 +373,8 @@ export const mockReviewItems: ReviewItem[] = [
     deliveryCycle: '合同签署后30个工作日',
     reviewStatus: 'pending',
     reviewNotes: '',
-    createdAt: '2026-06-10'
+    createdAt: '2026-06-10 09:00',
+    updatedAt: '2026-06-10 09:00'
   }
 ]
 

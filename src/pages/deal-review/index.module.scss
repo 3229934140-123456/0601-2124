@@ -395,3 +395,287 @@
 .footer {
   height: 40rpx;
 }
+
+.sectionAction {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.contractCard {
+  padding: $spacing-md;
+  background: linear-gradient(135deg, #f0f5ff 0%, #f9f0ff 100%);
+  border-radius: $radius-lg;
+  border: 1rpx solid #d6e4ff;
+}
+
+.contractRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 2rpx dashed rgba(22, 93, 255, 0.15);
+}
+
+.contractRowItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.contractRowLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.contractRow2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.contractInfoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.contractInfoLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.contractInfoValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.paymentProgress {
+  padding: $spacing-md;
+  background: rgba(255,255,255,0.6);
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+}
+
+.payProgHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.payProgLabel {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.payProgValue {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.payProgBar {
+  height: 12rpx;
+  background: #e5e6eb;
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-bottom: $spacing-md;
+}
+
+.payProgFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary, #722ed1);
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+}
+
+.payNodeList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.payNode {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  background: rgba(255,255,255,0.8);
+  border-radius: $radius-md;
+  opacity: 0.6;
+}
+
+.payNodePaid {
+  opacity: 1;
+  background: #e6ffed;
+}
+
+.payNodeDot {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: #c9cdd4;
+  color: #fff;
+  font-size: $font-size-xs;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.payNodePaid .payNodeDot {
+  background: linear-gradient(135deg, #00b42a 0%, #23c343 100%);
+}
+
+.payNodeInfo {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payNodeName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.payNodePaid .payNodeName {
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.payNodeAmount {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-secondary;
+}
+
+.payNodePaid .payNodeAmount {
+  color: #00b42a;
+}
+
+.acceptanceResultBox {
+  padding: $spacing-md;
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
+  border-radius: $radius-md;
+  border-left: 6rpx solid #faad14;
+}
+
+.acceptanceResultLabel {
+  display: block;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: #d46b08;
+  margin-bottom: 6rpx;
+}
+
+.acceptanceResultText {
+  font-size: $font-size-sm;
+  color: #ad6800;
+  line-height: 1.7;
+}
+
+.noContract {
+  padding: $spacing-xl $spacing-lg;
+  text-align: center;
+  background: $color-bg-light;
+  border-radius: $radius-lg;
+}
+
+.noContractText {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-md;
+}
+
+.noContractBtn {
+  display: inline-block;
+  padding: $spacing-sm $spacing-xl;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-round;
+  box-shadow: 0 6rpx 16rpx rgba(22, 93, 255, 0.2);
+}
+
+.timelineCard {
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-light;
+  border-radius: $radius-lg;
+}
+
+.timelineItem {
+  position: relative;
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-sm 0;
+  padding-left: 0;
+}
+
+.timelineDot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 8rpx;
+  z-index: 2;
+  box-shadow: 0 0 0 6rpx rgba(255,255,255,0.8);
+}
+
+.timelineLine {
+  position: absolute;
+  left: 9rpx;
+  top: 32rpx;
+  bottom: -$spacing-sm;
+  width: 2rpx;
+  background: #e5e6eb;
+  z-index: 1;
+}
+
+.timelineContent {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: $spacing-sm;
+  border-bottom: 2rpx dashed #e5e6eb;
+}
+
+.timelineItem:last-child .timelineContent {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6rpx;
+}
+
+.timelineSupplier {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.timelineAction {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-bottom: 6rpx;
+}
+
+.timelineNote {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-bottom: 6rpx;
+}
+
+.timelineTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

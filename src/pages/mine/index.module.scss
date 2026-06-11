@@ -534,3 +534,82 @@
   font-weight: $font-weight-medium;
   border-radius: $radius-round;
 }
+
+.contractItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-sm;
+  border: 1rpx solid $color-divider;
+}
+
+.contractItemLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex: 1;
+  min-width: 0;
+}
+
+.contractIcon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, #e6f4ff 0%, #f0f5ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.contractItemInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.contractItemTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.contractItemSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.contractItemTags {
+  display: flex;
+  gap: 8rpx;
+  flex-wrap: wrap;
+  margin-top: 4rpx;
+}
+
+.contractItemRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $spacing-xs;
+  flex-shrink: 0;
+  margin-left: $spacing-md;
+}
+
+.contractItemAmount {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+}
+
+.contractItemArrow {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+}

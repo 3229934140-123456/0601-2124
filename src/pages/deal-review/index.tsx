@@ -3,6 +3,9 @@ import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useAppStore } from '@/store'
 import { formatPrice, formatBudget } from '@/utils'
+import {
+  ReviewStatusMap, ContractStatusMap, AcceptanceStatusMap
+} from '@/types'
 import StatusTag from '@/components/StatusTag'
 import styles from './index.module.scss'
 
@@ -10,6 +13,8 @@ const DealReviewPage = () => {
   const reviewItems = useAppStore(state => state.reviewItems)
   const satisfactionRatings = useAppStore(state => state.satisfactionRatings)
   const demands = useAppStore(state => state.demands)
+  const contractFollowUps = useAppStore(state => state.contractFollowUps)
+  const decisionRecords = useAppStore(state => state.decisionRecords)
 
   const reviewId = Taro.getCurrentInstance().router?.params?.reviewId
 
@@ -26,6 +31,18 @@ const DealReviewPage = () => {
   const currentRating = useMemo(() =>
     satisfactionRatings.find(r => r.demandId === currentReview?.demandId && r.supplierId === currentReview?.supplierId),
     [satisfactionRatings, currentReview]
+  )
+
+  const currentContract = useMemo(() =>
+    contractFollowUps.find(c => c.reviewId === reviewId),
+    [contractFollowUps, reviewId]
+  )
+
+  const decisionHistory = useMemo(() =>
+    decisionRecords
+      .filter(r => r.demandId === currentReview?.demandId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [decisionRecords, currentReview]
   )
 
   const peerReviews = useMemo(() =>
@@ -55,6 +72,12 @@ const DealReviewPage = () => {
       </View>
     )
   }
+
+  const goContractFollowup = () => {
+    Taro.navigateTo({ url: `/pages/contract-followup/index?reviewId=${reviewId}` })
+  }
+
+  const paidAmount = currentContract?.paymentNodes?.filter(n => n.status === 'paid').reduce((sum, n) => sum + n.amount, 0) || 0
 
   return (
     <ScrollView scrollY className={styles.page}>
@@ -145,6 +168,86 @@ const DealReviewPage = () => {
         </View>
       </View>
 
+      <View className={styles.section}>
+        <View className={styles.sectionHeader}>
+          <Text className={styles.sectionIcon}>📄</Text>
+          <Text className={styles.sectionTitle}>合同与交付</Text>
+          <View className={styles.sectionAction} onClick={goContractFollowup}>
+            <Text>跟进详情 →</Text>
+          </View>
+        </View>
+        {currentContract ? (
+          <View className={styles.contractCard}>
+            <View className={styles.contractRow}>
+              <View className={styles.contractRowItem}>
+                <Text className={styles.contractRowLabel}>合同状态</Text>
+                <StatusTag
+                  label={ContractStatusMap[currentContract.contractStatus].label}
+                  color={ContractStatusMap[currentContract.contractStatus].color}
+                  size="small"
+                />
+              </View>
+              <View className={styles.contractRowItem}>
+                <Text className={styles.contractRowLabel}>验收状态</Text>
+                <StatusTag
+                  label={AcceptanceStatusMap[currentContract.acceptanceStatus].label}
+                  color={AcceptanceStatusMap[currentContract.acceptanceStatus].color}
+                  size="small"
+                />
+              </View>
+            </View>
+            <View className={styles.contractRow2}>
+              <View className={styles.contractInfoItem}>
+                <Text className={styles.contractInfoLabel}>合同编号</Text>
+                <Text className={styles.contractInfoValue}>{currentContract.contractNo || '-'}</Text>
+              </View>
+              <View className={styles.contractInfoItem}>
+                <Text className={styles.contractInfoLabel}>签署日期</Text>
+                <Text className={styles.contractInfoValue}>{currentContract.signDate || '-'}</Text>
+              </View>
+            </View>
+            <View className={styles.paymentProgress}>
+              <View className={styles.payProgHeader}>
+                <Text className={styles.payProgLabel}>付款进度</Text>
+                <Text className={styles.payProgValue}>
+                  ¥{formatPrice(paidAmount)} / ¥{formatPrice(currentContract.totalAmount)}
+                </Text>
+              </View>
+              <View className={styles.payProgBar}>
+                <View
+                  className={styles.payProgFill}
+                  style={{ width: `${currentContract.totalAmount > 0 ? (paidAmount / currentContract.totalAmount * 100) : 0}%` }}
+                />
+              </View>
+              <View className={styles.payNodeList}>
+                {currentContract.paymentNodes.map(node => (
+                  <View key={node.id} className={`${styles.payNode} ${node.status === 'paid' ? styles.payNodePaid : ''}`}>
+                    <View className={styles.payNodeDot}>✓</View>
+                    <View className={styles.payNodeInfo}>
+                      <Text className={styles.payNodeName}>{node.name}</Text>
+                      <Text className={styles.payNodeAmount}>¥{formatPrice(node.amount)}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+            {currentContract.acceptanceResult && (
+              <View className={styles.acceptanceResultBox}>
+                <Text className={styles.acceptanceResultLabel}>验收结论</Text>
+                <Text className={styles.acceptanceResultText}>{currentContract.acceptanceResult}</Text>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View className={styles.noContract}>
+            <Text className={styles.noContractText}>尚未创建合同跟进</Text>
+            <View className={styles.noContractBtn} onClick={goContractFollowup}>
+              <Text>创建合同跟进</Text>
+            </View>
+          </View>
+        )}
+      </View>
+
       {currentRating && (
         <View className={styles.section}>
           <View className={styles.sectionHeader}>
@@ -199,30 +302,71 @@ const DealReviewPage = () => {
             <Text className={styles.sectionIcon}>📊</Text>
             <Text className={styles.sectionTitle}>其他候选供应方（共{peerReviews.length}家）</Text>
           </View>
-          {peerReviews.map(peer => (
-            <View key={peer.id} className={styles.peerCard}>
-              <View className={styles.peerRow1}>
-                <View style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Text className={styles.peerName}>{peer.supplierName}</Text>
-                  <StatusTag
-                    label={peer.reviewStatus === 'rejected' ? '淘汰' : peer.reviewStatus === 'shortlisted' ? '入围' : '商谈中'}
-                    color={peer.reviewStatus === 'rejected' ? '#F53F3F' : peer.reviewStatus === 'shortlisted' ? '#165DFF' : '#FF7D00'}
-                    size="small"
-                  />
+          {peerReviews.map(peer => {
+            const statusInfo = ReviewStatusMap[peer.reviewStatus] || ReviewStatusMap.pending
+            return (
+              <View key={peer.id} className={styles.peerCard}>
+                <View className={styles.peerRow1}>
+                  <View style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <Text className={styles.peerName}>{peer.supplierName}</Text>
+                    <StatusTag
+                      label={statusInfo.label}
+                      color={statusInfo.color}
+                      size="small"
+                    />
+                  </View>
+                  <Text className={styles.peerScore}>匹配{peer.matchScore} · ¥{formatPrice(peer.quotePrice)}</Text>
                 </View>
-                <Text className={styles.peerScore}>匹配{peer.matchScore} · ¥{formatPrice(peer.quotePrice)}</Text>
-              </View>
-              <View className={styles.peerRow2}>
-                <Text className={styles.peerDelivery}>{peer.deliveryMethod} · {peer.deliveryCycle}</Text>
-              </View>
-              {peer.reviewNotes && (
-                <View className={styles.peerNote}>
-                  <Text className={styles.peerNoteLabel}>{peer.reviewStatus === 'rejected' ? '淘汰原因' : '评审备注'}：</Text>
-                  <Text className={styles.peerNoteText}>{peer.reviewNotes}</Text>
+                <View className={styles.peerRow2}>
+                  <Text className={styles.peerDelivery}>{peer.deliveryMethod} · {peer.deliveryCycle}</Text>
                 </View>
-              )}
-            </View>
-          ))}
+                {peer.reviewNotes && (
+                  <View className={styles.peerNote}>
+                    <Text className={styles.peerNoteLabel}>
+                      {peer.reviewStatus === 'rejected' ? '淘汰原因' : '评审备注'}：
+                    </Text>
+                    <Text className={styles.peerNoteText}>{peer.reviewNotes}</Text>
+                  </View>
+                )}
+              </View>
+            )
+          })}
+        </View>
+      )}
+
+      {decisionHistory.length > 0 && (
+        <View className={styles.section}>
+          <View className={styles.sectionHeader}>
+            <Text className={styles.sectionIcon}>📜</Text>
+            <Text className={styles.sectionTitle}>决策历史时间线</Text>
+          </View>
+          <View className={styles.timelineCard}>
+            {decisionHistory.map((record, idx) => {
+              const statusInfo = ReviewStatusMap[record.action]
+              const prevInfo = ReviewStatusMap[record.previousStatus]
+              return (
+                <View key={record.id} className={styles.timelineItem}>
+                  <View className={styles.timelineDot} style={{ background: statusInfo.color }} />
+                  {idx < decisionHistory.length - 1 && <View className={styles.timelineLine} />}
+                  <View className={styles.timelineContent}>
+                    <View className={styles.timelineHeader}>
+                      <Text className={styles.timelineSupplier}>{record.supplierName}</Text>
+                      <StatusTag label={statusInfo.label} color={statusInfo.color} size="small" />
+                    </View>
+                    <Text className={styles.timelineAction}>
+                      {prevInfo.label} → {statusInfo.label}
+                    </Text>
+                    {record.notes && (
+                      <Text className={styles.timelineNote}>{record.notes}</Text>
+                    )}
+                    <Text className={styles.timelineTime}>
+                      {record.operator} · {record.createdAt}
+                    </Text>
+                  </View>
+                </View>
+              )
+            })}
+          </View>
         </View>
       )}
 

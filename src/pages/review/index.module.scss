@@ -688,3 +688,238 @@
   border-color: $color-primary;
   font-weight: $font-weight-medium;
 }
+
+.globalTabsRow {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  overflow-x: auto;
+  @include scroll-x-container;
+}
+
+.globalTabChip {
+  @include scroll-x-item(auto);
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+  box-shadow: $shadow-card;
+  transition: all $transition-fast;
+}
+
+.globalTabChipActive {
+  background: $gradient-primary;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.globalTabBadge {
+  font-size: $font-size-xs;
+  background: rgba(255,255,255,0.3);
+  padding: 2rpx 12rpx;
+  border-radius: 24rpx;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+}
+
+.searchIcon {
+  font-size: $font-size-lg;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.demandFilterRow {
+  margin-bottom: $spacing-md;
+}
+
+.demandFilterScroll {
+  white-space: nowrap;
+}
+
+.demandFilterChip {
+  display: inline-block;
+  padding: $spacing-sm $spacing-md;
+  margin-right: $spacing-sm;
+  background-color: $color-bg-card;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  box-shadow: $shadow-card;
+  transition: all $transition-fast;
+  vertical-align: middle;
+  max-width: 300rpx;
+}
+
+.demandFilterChipActive {
+  background-color: $color-primary-bg;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.demandFilterChipText {
+  @include text-ellipsis;
+  max-width: 250rpx;
+  display: inline-block;
+}
+
+.resultHint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm 0;
+  margin-bottom: $spacing-sm;
+}
+
+.resultHintText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.resultHintDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.rejectCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  border-left: 8rpx solid $color-error;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.99);
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+.rejectCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.rejectDemandInfo {
+  flex: 1;
+  margin-right: $spacing-sm;
+}
+
+.rejectDemandTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  margin-bottom: $spacing-xs;
+}
+
+.rejectCardArrow {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.rejectSupplierRow {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+.rejectSupplierName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.rejectProduct {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.rejectQuoteRow {
+  display: flex;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.rejectQuotePrice {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-error;
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.rejectQuoteDelivery {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  align-self: center;
+}
+
+.rejectReasonBox {
+  padding: $spacing-md;
+  background-color: $color-error-bg;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+}
+
+.rejectReasonLabel {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-error;
+  margin-bottom: 4rpx;
+}
+
+.rejectReasonText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.rejectCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed $color-divider;
+}
+
+.rejectTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.rejectViewCompare {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}

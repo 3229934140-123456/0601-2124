@@ -101,6 +101,21 @@
   box-shadow: none;
 }
 
+.compareCardHighlight {
+  border: 4rpx solid $color-primary;
+  box-shadow: 0 8rpx 32rpx rgba(22, 93, 255, 0.2);
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow: 0 8rpx 32rpx rgba(22, 93, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 8rpx 48rpx rgba(22, 93, 255, 0.35);
+  }
+}
+
 .compareHeader {
   display: flex;
   align-items: center;
@@ -582,6 +597,12 @@
   font-size: 28rpx;
   font-weight: 600;
   color: $color-text-primary;
+}
+
+.historyAction {
+  font-size: 24rpx;
+  color: $color-text-secondary;
+  margin-bottom: 6rpx;
 }
 
 .historyNote {

@@ -1,0 +1,573 @@
+@import '../../styles/theme.scss';
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 160rpx;
+}
+
+.headerCard {
+  margin: 24rpx;
+  padding: 32rpx;
+  background: linear-gradient(135deg, #165dff 0%, #722ed1 100%);
+  border-radius: 24rpx;
+  color: #fff;
+  box-shadow: 0 12rpx 32rpx rgba(22, 93, 255, 0.2);
+}
+
+.headerTitle {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 800;
+  margin-bottom: 8rpx;
+}
+
+.headerSub {
+  display: block;
+  font-size: 26rpx;
+  opacity: 0.9;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerInfoRow {
+  display: flex;
+  gap: 32rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx solid rgba(255,255,255,0.2);
+}
+
+.headerInfoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.headerInfoLabel {
+  font-size: 22rpx;
+  opacity: 0.8;
+}
+
+.headerInfoValue {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.section {
+  margin: 24rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  box-shadow: $shadow-sm;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.sectionIcon {
+  font-size: 32rpx;
+}
+
+.sectionTitle {
+  flex: 1;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+}
+
+.editBtn {
+  padding: 8rpx 20rpx;
+  background: $color-bg-light;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: $color-primary;
+  font-weight: 500;
+}
+
+.statusSteps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16rpx 0 8rpx;
+}
+
+.stepItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.stepDot {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: #f2f3f5;
+  color: #c9cdd4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.stepDotDone {
+  background: linear-gradient(135deg, #00b42a 0%, #23c343 100%);
+  color: #fff;
+}
+
+.stepDotCurrent {
+  background: linear-gradient(135deg, #165dff 0%, #722ed1 100%);
+  color: #fff;
+  box-shadow: 0 0 0 8rpx rgba(22, 93, 255, 0.15);
+}
+
+.stepLabel {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #86909c;
+  font-weight: 500;
+}
+
+.stepLabelDone {
+  color: $color-text-primary;
+}
+
+.stepLine {
+  position: absolute;
+  top: 28rpx;
+  left: 50%;
+  width: 100%;
+  height: 4rpx;
+  background: #f2f3f5;
+  z-index: 1;
+}
+
+.stepLineDone {
+  background: linear-gradient(90deg, #00b42a, #23c343);
+}
+
+.statusActions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx solid #f5f5f5;
+}
+
+.statusBtnPrimary {
+  flex: 1;
+  height: 76rpx;
+  border-radius: 38rpx;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statusBtnGhost {
+  flex: 1;
+  height: 76rpx;
+  border-radius: 38rpx;
+  border: 2rpx solid #e5e6eb;
+  background: #fff;
+  color: $color-text-secondary;
+  font-size: 28rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.infoCard {
+  background: $color-bg-light;
+  border-radius: 16rpx;
+  padding: 8rpx 20rpx;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 2rpx solid #eaeaec;
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.infoLabel {
+  font-size: 26rpx;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: 26rpx;
+  color: $color-text-primary;
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+}
+
+.infoValueHighlight {
+  font-size: 32rpx;
+  color: $color-error;
+  font-weight: 700;
+}
+
+.infoInput {
+  flex: 1;
+  text-align: right;
+  font-size: 26rpx;
+  color: $color-text-primary;
+  padding: 8rpx 12rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  border: 2rpx solid #e5e6eb;
+}
+
+.saveBtn {
+  margin-top: 20rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paymentSummary {
+  display: flex;
+  padding: 20rpx;
+  background: linear-gradient(135deg, #f0f5ff 0%, #f9f0ff 100%);
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.paySumItem {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.paySumLabel {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+}
+
+.paySumValuePaid {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #00b42a;
+}
+
+.paySumValuePending {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #ff7d00;
+}
+
+.paySumValueTotal {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.paymentList {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.paymentItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+  background: $color-bg-light;
+  border-radius: 16rpx;
+}
+
+.paymentLeft {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.paymentDot {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: #e5e6eb;
+  color: #86909c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.paymentDotPaid {
+  background: linear-gradient(135deg, #00b42a 0%, #23c343 100%);
+  color: #fff;
+}
+
+.paymentInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.paymentName {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.paymentDeadline {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+}
+
+.paymentRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.paymentAmount {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: $color-error;
+}
+
+.paymentToggle {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  background: #fff;
+  border: 2rpx solid #e5e6eb;
+  font-size: 22rpx;
+  color: $color-text-secondary;
+  font-weight: 500;
+}
+
+.paymentTogglePaid {
+  background: #e6ffed;
+  border-color: #b7eb8f;
+  color: #00b42a;
+}
+
+.acceptanceCard {
+  padding: 24rpx;
+  background: $color-bg-light;
+  border-radius: 16rpx;
+}
+
+.acceptanceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20rpx;
+  margin-bottom: 20rpx;
+  border-bottom: 2rpx solid #eaeaec;
+}
+
+.acceptanceLabel {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+}
+
+.acceptanceRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.acceptanceSubLabel {
+  font-size: 26rpx;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.acceptanceValue {
+  flex: 1;
+  font-size: 26rpx;
+  color: $color-text-secondary;
+  text-align: right;
+  line-height: 1.6;
+}
+
+.acceptanceInput {
+  flex: 1;
+  min-height: 120rpx;
+  padding: 16rpx;
+  background: #fff;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: $color-text-primary;
+  border: 2rpx solid #e5e6eb;
+  box-sizing: border-box;
+}
+
+.acceptanceActions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 2rpx dashed #eaeaec;
+}
+
+.acceptBtnPass {
+  flex: 1;
+  height: 76rpx;
+  border-radius: 38rpx;
+  background: linear-gradient(135deg, #00b42a 0%, #23c343 100%);
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acceptBtnReject {
+  flex: 1;
+  height: 76rpx;
+  border-radius: 38rpx;
+  border: 2rpx solid #f53f3f;
+  background: #fff;
+  color: #f53f3f;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.noContractCard {
+  margin: 48rpx 24rpx;
+  padding: 60rpx 32rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  text-align: center;
+  box-shadow: $shadow-sm;
+}
+
+.noContractIcon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.noContractTitle {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+  margin-bottom: 12rpx;
+}
+
+.noContractDesc {
+  display: block;
+  font-size: 26rpx;
+  color: $color-text-tertiary;
+  margin-bottom: 32rpx;
+  line-height: 1.6;
+}
+
+.noContractBtn {
+  display: inline-block;
+  padding: 20rpx 60rpx;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 48rpx;
+  box-shadow: 0 8rpx 24rpx rgba(22, 93, 255, 0.25);
+}
+
+.emptyState {
+  padding: 120rpx 48rpx;
+  text-align: center;
+}
+
+.emptyTitle {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+  margin: 24rpx 0 12rpx;
+}
+
+.emptyDesc {
+  font-size: 26rpx;
+  color: $color-text-tertiary;
+  line-height: 1.6;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.bottomBtnGhost {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 48rpx;
+  border: 2rpx solid #e5e6eb;
+  background: #fff;
+  color: $color-text-secondary;
+  font-size: 30rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottomBtnPrimary {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 48rpx;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(22, 93, 255, 0.25);
+}

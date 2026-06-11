@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { View, Text, ScrollView, Textarea } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useAppStore } from '@/store'
@@ -11,6 +11,7 @@ const ComparisonDetailPage = () => {
   const reviewItems = useAppStore(state => state.reviewItems)
   const suppliers = useAppStore(state => state.suppliers)
   const demands = useAppStore(state => state.demands)
+  const decisionRecords = useAppStore(state => state.decisionRecords)
   const updateReviewStatus = useAppStore(state => state.updateReviewStatus)
 
   const [activeFilter, setActiveFilter] = useState('all')
@@ -18,6 +19,7 @@ const ComparisonDetailPage = () => {
   const [currentReviewItem, setCurrentReviewItem] = useState<any>(null)
   const [decisionType, setDecisionType] = useState<'won' | 'rejected'>('rejected')
   const [decisionNote, setDecisionNote] = useState('')
+  const [scrollIntoViewId, setScrollIntoViewId] = useState('')
 
   const filters = [
     { key: 'all', label: '全部维度' },
@@ -27,6 +29,7 @@ const ComparisonDetailPage = () => {
   ]
 
   const demandId = Taro.getCurrentInstance().router?.params?.demandId
+  const highlightSupplierId = Taro.getCurrentInstance().router?.params?.highlightSupplierId
 
   const activeDemand = useMemo(() => {
     if (demandId) return demands.find(d => d.id === demandId)
@@ -47,10 +50,10 @@ const ComparisonDetailPage = () => {
   )
 
   const decisionHistory = useMemo(() =>
-    demandReviews
-      .filter(r => ['won', 'rejected'].includes(r.reviewStatus) && r.reviewNotes)
+    decisionRecords
+      .filter(r => r.demandId === (activeDemand?.id || ''))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-    [demandReviews]
+    [decisionRecords, activeDemand]
   )
 
   const comparisonData = useMemo(() =>
@@ -86,9 +89,18 @@ const ComparisonDetailPage = () => {
   const minPrice = activeComparisonData.length > 0 ? Math.min(...activeComparisonData.map(c => c.price)) : 0
   const highestScore = activeComparisonData.length > 0 ? Math.max(...activeComparisonData.map(c => c.matchScore)) : 0
 
+  useEffect(() => {
+    if (highlightSupplierId) {
+      const timer = setTimeout(() => {
+        setScrollIntoViewId(`supplier-card-${highlightSupplierId}`)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [highlightSupplierId, comparisonData])
+
   if (activeComparisonData.length < 2) {
     return (
-      <ScrollView scrollY className={styles.page}>
+      <ScrollView scrollY className={styles.page} scroll-into-view={scrollIntoViewId} scroll-with-animation>
         <View className={styles.headerCard}>
           <Text className={styles.demandTitle}>{activeDemand?.title || '需求比对表'}</Text>
         </View>
@@ -102,14 +114,15 @@ const ComparisonDetailPage = () => {
           </View>
         </View>
 
-        {comparisonData.filter(c => !c.isActive).length > 0 && (
+        {decisionHistory.length > 0 && (
           <View className={styles.historySection}>
             <View className={styles.historyHeader}>
               <Text className={styles.historyIcon}>📜</Text>
               <Text className={styles.historyTitle}>决策历史记录</Text>
             </View>
             {decisionHistory.map(dh => {
-              const statusInfo = ReviewStatusMap[dh.reviewStatus]
+              const statusInfo = ReviewStatusMap[dh.action]
+              const prevInfo = ReviewStatusMap[dh.previousStatus]
               return (
                 <View key={dh.id} className={styles.historyItem}>
                   <View className={styles.historyStatusDot} style={{ background: statusInfo?.color || '#86909c' }} />
@@ -118,8 +131,11 @@ const ComparisonDetailPage = () => {
                       <Text className={styles.historySupplier}>{dh.supplierName}</Text>
                       <StatusTag label={statusInfo?.label || '-'} color={statusInfo?.color || '#86909c'} size="small" />
                     </View>
-                    <Text className={styles.historyNote}>{dh.reviewNotes}</Text>
-                    <Text className={styles.historyTime}>决策时间：{dh.createdAt}</Text>
+                    <Text className={styles.historyAction}>
+                      {prevInfo?.label || '-'} → {statusInfo?.label || '-'}
+                    </Text>
+                    {dh.notes && <Text className={styles.historyNote}>{dh.notes}</Text>}
+                    <Text className={styles.historyTime}>操作人：{dh.operator} · {dh.createdAt}</Text>
                   </View>
                 </View>
               )
@@ -175,7 +191,7 @@ const ComparisonDetailPage = () => {
   }
 
   return (
-    <ScrollView scrollY className={styles.page}>
+    <ScrollView scrollY className={styles.page} scroll-into-view={scrollIntoViewId} scroll-with-animation>
       <View className={styles.headerCard}>
         <Text className={styles.demandTitle}>{activeDemand?.title || '需求比对表'}</Text>
         <View className={styles.demandMeta}>
@@ -228,10 +244,12 @@ const ComparisonDetailPage = () => {
         {comparisonData.map((item, idx) => {
           const statusInfo = ReviewStatusMap[item.reviewStatus] || ReviewStatusMap.pending
           const isRejected = item.reviewStatus === 'rejected'
+          const isHighlighted = item.supplierId === highlightSupplierId
           return (
             <View
               key={item.id}
-              className={`${styles.compareCard} ${isRejected ? styles.compareCardRejected : ''}`}
+              id={`supplier-card-${item.supplierId}`}
+              className={`${styles.compareCard} ${isRejected ? styles.compareCardRejected : ''} ${isHighlighted ? styles.compareCardHighlight : ''}`}
             >
               <View className={styles.compareHeader}>
                 <View className={styles.supplierShort}>
@@ -356,7 +374,8 @@ const ComparisonDetailPage = () => {
             <Text className={styles.historyTitle}>决策历史记录</Text>
           </View>
           {decisionHistory.map(dh => {
-            const statusInfo = ReviewStatusMap[dh.reviewStatus]
+            const statusInfo = ReviewStatusMap[dh.action]
+            const prevInfo = ReviewStatusMap[dh.previousStatus]
             return (
               <View key={dh.id} className={styles.historyItem}>
                 <View className={styles.historyStatusDot} style={{ background: statusInfo?.color || '#86909c' }} />
@@ -365,8 +384,11 @@ const ComparisonDetailPage = () => {
                     <Text className={styles.historySupplier}>{dh.supplierName}</Text>
                     <StatusTag label={statusInfo?.label || '-'} color={statusInfo?.color || '#86909c'} size="small" />
                   </View>
-                  <Text className={styles.historyNote}>{dh.reviewNotes}</Text>
-                  <Text className={styles.historyTime}>决策时间：{dh.createdAt}</Text>
+                  <Text className={styles.historyAction}>
+                    {prevInfo?.label || '-'} → {statusInfo?.label || '-'}
+                  </Text>
+                  {dh.notes && <Text className={styles.historyNote}>{dh.notes}</Text>}
+                  <Text className={styles.historyTime}>操作人：{dh.operator} · {dh.createdAt}</Text>
                 </View>
               </View>
             )

@@ -1,6 +1,13 @@
 import { create } from 'zustand'
-import type { DataDemand, DataSupplier, Conversation, ChatMessage, ReviewItem, SatisfactionRating } from '@/types'
-import { mockDemands, mockSuppliers, mockConversations, mockChatMessages, mockReviewItems, mockSatisfactionRatings } from '@/data/mock'
+import type {
+  DataDemand, DataSupplier, Conversation, ChatMessage,
+  ReviewItem, SatisfactionRating, DecisionRecord,
+  ContractFollowUp, PaymentNode
+} from '@/types'
+import {
+  mockDemands, mockSuppliers, mockConversations,
+  mockChatMessages, mockReviewItems, mockSatisfactionRatings
+} from '@/data/mock'
 
 interface AppState {
   demands: DataDemand[]
@@ -9,6 +16,8 @@ interface AppState {
   chatMessages: ChatMessage[]
   reviewItems: ReviewItem[]
   satisfactionRatings: SatisfactionRating[]
+  decisionRecords: DecisionRecord[]
+  contractFollowUps: ContractFollowUp[]
   currentDemand: DataDemand | null
   currentSupplier: DataSupplier | null
   currentConversation: Conversation | null
@@ -29,6 +38,13 @@ interface AppState {
   addSatisfactionRating: (rating: SatisfactionRating) => void
   getMessagesByConversation: (conversationId: string) => ChatMessage[]
   getReviewsByDemand: (demandId: string) => ReviewItem[]
+  addDecisionRecord: (record: Omit<DecisionRecord, 'id' | 'createdAt' | 'operator'> & { operator?: string }) => void
+  getDecisionRecordsByReview: (reviewId: string) => DecisionRecord[]
+  getDecisionRecordsByDemand: (demandId: string) => DecisionRecord[]
+  addContractFollowUp: (followUp: Omit<ContractFollowUp, 'id' | 'createdAt'>) => void
+  updateContractFollowUp: (id: string, updates: Partial<ContractFollowUp>) => void
+  getContractByReview: (reviewId: string) => ContractFollowUp | undefined
+  updatePaymentNode: (contractId: string, nodeId: string, status: 'pending' | 'paid') => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -38,6 +54,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   chatMessages: mockChatMessages,
   reviewItems: mockReviewItems,
   satisfactionRatings: mockSatisfactionRatings,
+  decisionRecords: [],
+  contractFollowUps: [],
   currentDemand: null,
   currentSupplier: null,
   currentConversation: null,
@@ -101,7 +119,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   addReviewItem: (review) => set((state) => {
     const exists = state.reviewItems.find(r => r.supplierId === review.supplierId && r.demandId === review.demandId)
     if (exists) return state
-    const now = new Date().toISOString().split('T')[0]
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
     const newReview: ReviewItem = {
       id: review.id || `REV_${Date.now()}`,
       demandId: review.demandId,
@@ -116,23 +134,54 @@ export const useAppStore = create<AppState>((set, get) => ({
       reviewStatus: review.reviewStatus || 'pending',
       reviewNotes: review.reviewNotes || '',
       createdAt: review.createdAt || now,
+      updatedAt: review.updatedAt || now,
     }
     return {
       reviewItems: [newReview, ...state.reviewItems],
     }
   }),
 
-  updateReviewStatus: (reviewId, status, notes) => set((state) => ({
-    reviewItems: state.reviewItems.map(r =>
-      r.id === reviewId ? { ...r, reviewStatus: status, reviewNotes: notes ?? r.reviewNotes } : r
-    )
-  })),
+  updateReviewStatus: (reviewId, status, notes) => set((state) => {
+    const review = state.reviewItems.find(r => r.id === reviewId)
+    if (!review) return state
+    const previousStatus = review.reviewStatus
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    if (previousStatus === status) {
+      return {
+        reviewItems: state.reviewItems.map(r =>
+          r.id === reviewId ? { ...r, reviewNotes: notes ?? r.reviewNotes, updatedAt: now } : r
+        )
+      }
+    }
+    const newRecord: DecisionRecord = {
+      id: `DEC_${Date.now()}`,
+      reviewId,
+      demandId: review.demandId,
+      demandTitle: review.demandTitle,
+      supplierId: review.supplierId,
+      supplierName: review.supplierName,
+      action: status,
+      previousStatus,
+      notes: notes || '',
+      operator: '李明轩',
+      createdAt: now,
+    }
+    return {
+      reviewItems: state.reviewItems.map(r =>
+        r.id === reviewId ? { ...r, reviewStatus: status, reviewNotes: notes ?? r.reviewNotes, updatedAt: now } : r
+      ),
+      decisionRecords: [...state.decisionRecords, newRecord],
+    }
+  }),
 
-  updateReviewQuote: (reviewId, price, method, cycle) => set((state) => ({
-    reviewItems: state.reviewItems.map(r =>
-      r.id === reviewId ? { ...r, quotePrice: price, deliveryMethod: method, deliveryCycle: cycle ?? r.deliveryCycle } : r
-    )
-  })),
+  updateReviewQuote: (reviewId, price, method, cycle) => set((state) => {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    return {
+      reviewItems: state.reviewItems.map(r =>
+        r.id === reviewId ? { ...r, quotePrice: price, deliveryMethod: method, deliveryCycle: cycle ?? r.deliveryCycle, updatedAt: now } : r
+      )
+    }
+  }),
 
   addChatMessage: (conversationId, content) => set((state) => {
     const newMessage: ChatMessage = {
@@ -159,5 +208,77 @@ export const useAppStore = create<AppState>((set, get) => ({
     get().chatMessages.filter(m => m.conversationId === conversationId).sort((a, b) => a.timestamp.localeCompare(b.timestamp)),
 
   getReviewsByDemand: (demandId) =>
-    get().reviewItems.filter(r => r.demandId === demandId)
+    get().reviewItems.filter(r => r.demandId === demandId),
+
+  addDecisionRecord: (record) => set((state) => {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 16)
+    const newRecord: DecisionRecord = {
+      id: `DEC_${Date.now()}`,
+      reviewId: record.reviewId,
+      demandId: record.demandId,
+      demandTitle: record.demandTitle,
+      supplierId: record.supplierId,
+      supplierName: record.supplierName,
+      action: record.action,
+      previousStatus: record.previousStatus,
+      notes: record.notes,
+      operator: record.operator || '李明轩',
+      createdAt: now,
+    }
+    return {
+      decisionRecords: [...state.decisionRecords, newRecord],
+    }
+  }),
+
+  getDecisionRecordsByReview: (reviewId) =>
+    get().decisionRecords.filter(r => r.reviewId === reviewId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+
+  getDecisionRecordsByDemand: (demandId) =>
+    get().decisionRecords.filter(r => r.demandId === demandId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+
+  addContractFollowUp: (followUp) => set((state) => {
+    const exists = state.contractFollowUps.find(c => c.reviewId === followUp.reviewId)
+    if (exists) return state
+    const now = new Date().toISOString().split('T')[0]
+    const newContract: ContractFollowUp = {
+      id: `CTR_${Date.now()}`,
+      reviewId: followUp.reviewId,
+      demandId: followUp.demandId,
+      demandTitle: followUp.demandTitle,
+      supplierId: followUp.supplierId,
+      supplierName: followUp.supplierName,
+      contractStatus: followUp.contractStatus || 'pending',
+      contractNo: followUp.contractNo || '',
+      signDate: followUp.signDate || '',
+      totalAmount: followUp.totalAmount || 0,
+      paymentNodes: followUp.paymentNodes || [],
+      acceptanceStatus: followUp.acceptanceStatus || 'pending',
+      acceptanceDate: followUp.acceptanceDate || '',
+      acceptanceResult: followUp.acceptanceResult || '',
+      createdAt: now,
+    }
+    return {
+      contractFollowUps: [...state.contractFollowUps, newContract],
+    }
+  }),
+
+  updateContractFollowUp: (id, updates) => set((state) => ({
+    contractFollowUps: state.contractFollowUps.map(c =>
+      c.id === id ? { ...c, ...updates } : c
+    )
+  })),
+
+  getContractByReview: (reviewId) =>
+    get().contractFollowUps.find(c => c.reviewId === reviewId),
+
+  updatePaymentNode: (contractId, nodeId, status) => set((state) => ({
+    contractFollowUps: state.contractFollowUps.map(c =>
+      c.id === contractId ? {
+        ...c,
+        paymentNodes: c.paymentNodes.map(n =>
+          n.id === nodeId ? { ...n, status } : n
+        )
+      } : c
+    )
+  })),
 }))

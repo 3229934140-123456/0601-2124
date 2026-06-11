@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Textarea } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useAppStore } from '@/store'
 import { formatPrice, formatBudget, getMatchScoreColor } from '@/utils'
@@ -9,7 +9,13 @@ const ComparisonDetailPage = () => {
   const reviewItems = useAppStore(state => state.reviewItems)
   const suppliers = useAppStore(state => state.suppliers)
   const demands = useAppStore(state => state.demands)
+  const updateReviewStatus = useAppStore(state => state.updateReviewStatus)
+
   const [activeFilter, setActiveFilter] = useState('all')
+  const [decisionModalVisible, setDecisionModalVisible] = useState(false)
+  const [currentReviewItem, setCurrentReviewItem] = useState<any>(null)
+  const [decisionType, setDecisionType] = useState<'won' | 'eliminated'>('eliminated')
+  const [decisionNote, setDecisionNote] = useState('')
 
   const filters = [
     { key: 'all', label: '全部维度' },
@@ -67,14 +73,14 @@ const ComparisonDetailPage = () => {
         <View className={styles.headerCard}>
           <Text className={styles.demandTitle}>需求比对表</Text>
         </View>
-        <View className={styles.recommendCard}>
-          <View className={styles.recommendHeader}>
-            <View className={styles.recommendIcon}>⚠️</View>
-            <Text className={styles.recommendTitle}>入围供应方不足</Text>
+        <View className={styles.emptyHintCard}>
+          <View className={styles.emptyHintIcon}>⚠️</View>
+          <View className={styles.emptyHintContent}>
+            <Text className={styles.emptyHintTitle}>入围供应方不足</Text>
+            <Text className={styles.emptyHintDesc}>
+              当前入围供应方仅{comparisonData.length}家，至少需要2家入围供应方才能生成比对表。请返回评审清单，将更多供应方标记为"入围"状态。
+            </Text>
           </View>
-          <Text className={styles.recommendText}>
-            当前入围供应方仅{comparisonData.length}家，至少需要2家入围供应方才能生成比对表。请返回评审清单，将更多供应方标记为"入围"状态。
-          </Text>
         </View>
         <View className={styles.bottomBar}>
           <View className={styles.btnPrimary} onClick={() => Taro.switchTab({ url: '/pages/review/index' })}>
@@ -83,6 +89,21 @@ const ComparisonDetailPage = () => {
         </View>
       </ScrollView>
     )
+  }
+
+  const openDecisionModal = (item: any, type: 'won' | 'eliminated') => {
+    setCurrentReviewItem(item)
+    setDecisionType(type)
+    setDecisionNote('')
+    setDecisionModalVisible(true)
+  }
+
+  const handleDecisionConfirm = () => {
+    if (!currentReviewItem) return
+    updateReviewStatus(currentReviewItem.id, decisionType, decisionNote)
+    setDecisionModalVisible(false)
+    const msg = decisionType === 'won' ? '已标记为中标' : '已标记为淘汰'
+    Taro.showToast({ title: msg, icon: 'success' })
   }
 
   const handleExport = () => {
@@ -164,9 +185,14 @@ const ComparisonDetailPage = () => {
             <View className={styles.compareHeader}>
               <View className={styles.supplierShort}>
                 <View className={styles.supplierLogo}>{item.logo}</View>
-                <Text className={styles.supplierName}>
-                  {idx + 1}. {item.name}
-                </Text>
+                <View>
+                  <Text className={styles.supplierName}>
+                    {idx + 1}. {item.name}
+                  </Text>
+                  {item.reviewStatus === 'won' && (
+                    <Text className={styles.statusBadgeWin}>✓ 已中标</Text>
+                  )}
+                </View>
               </View>
               <View
                 className={styles.scoreBadge}
@@ -238,16 +264,65 @@ const ComparisonDetailPage = () => {
                 </View>
               )}
             </View>
+
+            {item.reviewStatus !== 'won' && item.reviewStatus !== 'eliminated' && (
+              <View className={styles.decisionRow}>
+                <View className={styles.decisionBtn} onClick={() => openDecisionModal(item, 'won')}>
+                  <Text className={styles.decisionBtnWin}>🏆 标记中标</Text>
+                </View>
+                <View className={styles.decisionBtn} onClick={() => openDecisionModal(item, 'eliminated')}>
+                  <Text className={styles.decisionBtnLose}>✗ 淘汰出局</Text>
+                </View>
+              </View>
+            )}
           </View>
         ))}
       </View>
+
+      {decisionModalVisible && (
+        <View className={styles.modalMask} onClick={() => setDecisionModalVisible(false)}>
+          <View className={styles.modalContent} onClick={(e: any) => e.stopPropagation()}>
+            <Text className={styles.modalTitle}>
+              {decisionType === 'won' ? '🏆 确认中标' : '✗ 确认淘汰'}
+            </Text>
+            <View className={styles.modalRow}>
+              <Text className={styles.modalLabel}>供应方</Text>
+              <Text className={styles.modalValue}>{currentReviewItem?.name}</Text>
+            </View>
+            <View className={styles.modalRow}>
+              <Text className={styles.modalLabel}>
+                {decisionType === 'won' ? '中标说明' : '淘汰原因'} <Text style={{ color: '#c9cdd4' }}>（选填）</Text>
+              </Text>
+              <Textarea
+                className={styles.modalInput}
+                placeholder={decisionType === 'won'
+                  ? '请输入中标相关说明，便于后续跟进'
+                  : '请输入淘汰原因，便于后续复盘总结'
+                }
+                placeholderStyle="color: #c9cdd4"
+                value={decisionNote}
+                onInput={(e: any) => setDecisionNote(e.detail.value)}
+                maxlength={200}
+              />
+            </View>
+            <View className={styles.modalActions}>
+              <View className={styles.modalBtnCancel} onClick={() => setDecisionModalVisible(false)}>
+                <Text>取消</Text>
+              </View>
+              <View className={`${styles.modalBtnConfirm} ${decisionType === 'won' ? styles.modalBtnWin : styles.modalBtnLose}`} onClick={handleDecisionConfirm}>
+                <Text>确认{decisionType === 'won' ? '中标' : '淘汰'}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
 
       <View className={styles.bottomBar}>
         <View className={styles.btnGhost} onClick={handleExport}>
           <Text>📤 导出比对表</Text>
         </View>
         <View className={styles.btnPrimary} onClick={handleGoReview}>
-          <Text>继续评审决策</Text>
+          <Text>返回评审清单</Text>
         </View>
       </View>
     </ScrollView>

@@ -11,27 +11,48 @@ const DemandDetailPage = () => {
   const demands = useAppStore(state => state.demands)
   const reviewItems = useAppStore(state => state.reviewItems)
   const currentDemand = useAppStore(state => state.currentDemand)
-  const [demand, setDemand] = useState(currentDemand)
+  const setCurrentDemand = useAppStore(state => state.setCurrentDemand)
+
+  const [demand, setDemand] = useState<any>(null)
+  const [demandId, setDemandId] = useState<string | null>(null)
 
   useDidShow(() => {
-    if (currentDemand) {
-      setDemand(currentDemand)
-      return
-    }
     const params = Taro.getCurrentInstance().router?.params
     const id = params?.id
-    if (id) {
-      const found = demands.find(d => d.id === id)
-      if (found) setDemand(found)
+
+    let targetDemand: any = null
+
+    if (currentDemand && (!id || currentDemand.id === id)) {
+      targetDemand = currentDemand
+    } else if (id) {
+      targetDemand = demands.find(d => d.id === id) || null
+    }
+
+    if (targetDemand && targetDemand.id !== demandId) {
+      setDemand(targetDemand)
+      setDemandId(targetDemand.id)
+      setCurrentDemand(targetDemand)
+    } else if (!targetDemand && demand) {
+      setDemand(null)
+      setDemandId(null)
     }
   })
 
-  if (!demand) return null
+  if (!demand) {
+    return (
+      <ScrollView scrollY className={styles.page}>
+        <View className={styles.emptyLoading}>
+          <Text style={{ fontSize: 64, marginBottom: 24 }}>📋</Text>
+          <Text style={{ fontSize: 28, color: '#86909c' }}>加载中...</Text>
+        </View>
+      </ScrollView>
+    )
+  }
 
   const statusInfo = DemandStatusMap[demand.status] || DemandStatusMap.draft
   const relatedReviews = reviewItems.filter(r => r.demandId === demand.id)
-  const matchedCount = demand.matchedCount
-  const respondedCount = relatedReviews.length || demand.responseCount
+  const matchedCount = demand.matchedCount || 0
+  const respondedCount = relatedReviews.length || (demand.responseCount || 0)
   const shortlistedCount = relatedReviews.filter(r => r.reviewStatus === 'shortlisted').length
 
   const handleGoMatch = () => {

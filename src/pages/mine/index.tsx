@@ -6,6 +6,7 @@ import classnames from 'classnames'
 import { useAppStore } from '@/store'
 import { DemandStatusMap, ReviewStatusMap } from '@/types'
 import StatusTag from '@/components/StatusTag'
+import { formatPrice } from '@/utils'
 
 const MinePage: React.FC = () => {
   const demands = useAppStore(state => state.demands)
@@ -172,25 +173,90 @@ const MinePage: React.FC = () => {
         </View>
         <View className={styles.sectionContent}>
           {satisfactionRatings.length > 0 ? (
-            satisfactionRatings.map(rating => (
-              <View key={rating.id} className={styles.satisfactionCard}>
-                <View className={styles.satisfactionHeader}>
-                  <Text className={styles.satisfactionTitle}>{rating.supplierName}</Text>
-                  <View className={styles.satisfactionStars}>
-                    {[1,2,3,4,5].map(i => (
-                      <Text key={i} className={styles.star}>{i <= rating.overallRating ? '★' : '☆'}</Text>
-                    ))}
+            satisfactionRatings.map(rating => {
+              const dealReview = reviewItems.find(r =>
+                r.demandId === rating.demandId && r.supplierId === rating.supplierId
+              )
+              return (
+                <View key={rating.id} className={styles.ratingFullCard}>
+                  <View className={styles.ratingFullHeader}>
+                    <View className={styles.ratingSupplierInfo}>
+                      <Text className={styles.ratingSupplierName}>{rating.supplierName}</Text>
+                      <View className={styles.ratingStarsRow}>
+                        <View className={styles.ratingStars}>
+                          {[1,2,3,4,5].map(i => (
+                            <Text key={i} className={styles.starFull}>{i <= rating.overallRating ? '★' : '☆'}</Text>
+                          ))}
+                        </View>
+                        <Text className={styles.ratingScore}>{rating.overallRating}.0</Text>
+                      </View>
+                    </View>
+                    <Text className={styles.ratingDate}>{rating.createdAt}</Text>
                   </View>
+
+                  <View className={styles.ratingDemandRow}>
+                    <Text className={styles.ratingDemandLabel}>需求</Text>
+                    <Text className={styles.ratingDemandValue}>{rating.demandTitle}</Text>
+                  </View>
+
+                  <View className={styles.ratingMetaRow}>
+                    <View className={styles.ratingMetaItem}>
+                      <Text className={styles.ratingMetaLabel}>成交金额</Text>
+                      <Text className={styles.ratingMetaPrice}>¥{formatPrice(dealReview?.quotePrice || 0)}</Text>
+                    </View>
+                    <View className={styles.ratingMetaItem}>
+                      <Text className={styles.ratingMetaLabel}>交付方式</Text>
+                      <Text className={styles.ratingMetaValue}>{dealReview?.deliveryMethod || '-'}</Text>
+                    </View>
+                    <View className={styles.ratingMetaItem}>
+                      <Text className={styles.ratingMetaLabel}>数据质量</Text>
+                      <Text className={styles.ratingMetaValue}>{rating.dataQuality}分</Text>
+                    </View>
+                  </View>
+
+                  {rating.comment && (
+                    <View className={styles.ratingCommentBox}>
+                      <Text className={styles.ratingCommentText}>{rating.comment}</Text>
+                    </View>
+                  )}
                 </View>
-                <Text className={styles.satisfactionComment}>{rating.comment}</Text>
-              </View>
-            ))
-          ) : (
+              )
+            })
+          ) : null}
+
+          {completedDeals.filter(d => !satisfactionRatings.find(r => r.demandId === d.demandId && r.supplierId === d.supplierId)).length > 0 && (
+            <View style={{ padding: satisfactionRatings.length > 0 ? '0 24rpx 24rpx' : '0' }}>
+              {satisfactionRatings.length > 0 && <Text className={styles.ratingSectionDivider}>待评价（{completedDeals.filter(d => !satisfactionRatings.find(r => r.demandId === d.demandId && r.supplierId === d.supplierId)).length}）</Text>}
+              {completedDeals
+                .filter(d => !satisfactionRatings.find(r => r.demandId === d.demandId && r.supplierId === d.supplierId))
+                .slice(0, 3)
+                .map(deal => (
+                  <View
+                    key={deal.id}
+                    className={styles.pendingRatingItem}
+                    onClick={() => Taro.navigateTo({
+                      url: `/pages/satisfaction/index?reviewId=${deal.id}&demandId=${deal.demandId}&supplierId=${deal.supplierId}`
+                    })}
+                  >
+                    <View className={styles.pendingRatingInfo}>
+                      <Text className={styles.pendingRatingTitle}>{deal.supplierName}</Text>
+                      <Text className={styles.pendingRatingSub}>{deal.demandTitle}</Text>
+                    </View>
+                    <View className={styles.pendingRatingRight}>
+                      <Text className={styles.pendingRatingPrice}>¥{formatPrice(deal.quotePrice)}</Text>
+                      <View className={styles.pendingRatingBtn}>去评价</View>
+                    </View>
+                  </View>
+                ))}
+            </View>
+          )}
+
+          {satisfactionRatings.length === 0 && completedDeals.filter(d => !satisfactionRatings.find(r => r.demandId === d.demandId && r.supplierId === d.supplierId)).length === 0 && (
             <View className={styles.menuItem} onClick={() => handleNavigate('review')}>
               <View className={classnames(styles.menuIcon, styles.menuIconGreen)}>✅</View>
               <View className={styles.menuContent}>
-                <Text className={styles.menuTitle}>去评价已成交项目</Text>
-                <Text className={styles.menuSubtitle}>您有{completedDeals.length}个成交项目待评价，评价可获得积分奖励</Text>
+                <Text className={styles.menuTitle}>暂无成交评价</Text>
+                <Text className={styles.menuSubtitle}>完成采购后可对供应方进行评价</Text>
               </View>
               <Text className={styles.menuArrow}>›</Text>
             </View>

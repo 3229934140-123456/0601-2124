@@ -316,3 +316,177 @@
   justify-content: center;
   box-shadow: 0 8rpx 24rpx rgba(22, 93, 255, 0.25);
 }
+
+.emptyHintCard {
+  margin: 0 24rpx 24rpx;
+  padding: 32rpx;
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
+  border-radius: 24rpx;
+  border: 2rpx solid #ffd591;
+  display: flex;
+  gap: 24rpx;
+}
+
+.emptyHintIcon {
+  font-size: 56rpx;
+  flex-shrink: 0;
+}
+
+.emptyHintContent {
+  flex: 1;
+}
+
+.emptyHintTitle {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #d46b08;
+  margin-bottom: 12rpx;
+}
+
+.emptyHintDesc {
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: #ad6800;
+}
+
+.statusBadgeWin {
+  display: inline-block;
+  margin-top: 8rpx;
+  padding: 4rpx 16rpx;
+  background: linear-gradient(135deg, #00b42a 0%, #23c343 100%);
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 600;
+  border-radius: 8rpx;
+}
+
+.decisionRow {
+  display: flex;
+  gap: 20rpx;
+  padding-top: 24rpx;
+  margin-top: 12rpx;
+  border-top: 2rpx dashed #f0f0f0;
+}
+
+.decisionBtn {
+  flex: 1;
+  height: 72rpx;
+  border-radius: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.decisionBtnWin {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #00b42a 0%, #23c343 100%);
+  box-shadow: 0 6rpx 16rpx rgba(0, 180, 42, 0.25);
+}
+
+.decisionBtnLose {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #86909c 0%, #4e5969 100%);
+  box-shadow: 0 6rpx 16rpx rgba(134, 144, 156, 0.2);
+}
+
+.modalMask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 650rpx;
+  background-color: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  max-height: 80vh;
+}
+
+.modalTitle {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1d2129;
+  margin-bottom: 28rpx;
+}
+
+.modalRow {
+  margin-bottom: 28rpx;
+}
+
+.modalLabel {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1d2129;
+  margin-bottom: 12rpx;
+}
+
+.modalValue {
+  font-size: 28rpx;
+  color: #4e5969;
+  padding: 16rpx 20rpx;
+  background-color: #f7f8fa;
+  border-radius: 12rpx;
+}
+
+.modalInput {
+  width: 100%;
+  min-height: 160rpx;
+  padding: 20rpx;
+  background-color: #f7f8fa;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #1d2129;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.modalActions {
+  display: flex;
+  gap: 20rpx;
+}
+
+.modalBtnCancel {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  background-color: #f2f3f5;
+  color: #4e5969;
+  font-size: 28rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalBtnConfirm {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  background: $gradient-primary;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalBtnWin {
+  background: linear-gradient(135deg, #00b42a 0%, #23c343 100%) !important;
+}
+
+.modalBtnLose {
+  background: linear-gradient(135deg, #f53f3f 0%, #ff7875 100%) !important;
+}

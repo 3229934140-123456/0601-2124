@@ -1,176 +1,331 @@
-import React, { useState, useMemo } from 'react'
-import { View, Text, ScrollView, Button, Textarea, Input } from '@tarojs/components'
-import Taro, { useDidShow } from '@tarojs/taro'
-import styles from './index.module.scss'
-import classnames from 'classnames'
+import { useState, useMemo } from 'react'
+import { View, Text, ScrollView, Textarea } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import { useAppStore } from '@/store'
+import { ReviewStatusMap, FrequencyOptions } from '@/types'
+import { formatPrice, formatBudget, generateStars, getDaysRemaining } from '@/utils'
 import StatusTag from '@/components/StatusTag'
-import type { ReviewItem, ReviewStatus } from '@/types'
-import { ReviewStatusMap, DeliveryMethodOptions } from '@/types'
-import { formatPrice } from '@/utils'
+import styles from './index.module.scss'
 
-type FilterTab = 'all' | ReviewStatus
-
-const TABS: { key: FilterTab; label: string }[] = [
-  { key: 'all', label: '全部' },
-  { key: 'pending', label: '待评审' },
-  { key: 'shortlisted', label: '已入围' },
-  { key: 'negotiating', label: '商谈中' },
-  { key: 'won', label: '已中标' },
-  { key: 'rejected', label: '已淘汰' }
-]
-
-const ReviewPage: React.FC = () => {
+const ReviewPage = () => {
   const reviewItems = useAppStore(state => state.reviewItems)
+  const demands = useAppStore(state => state.demands)
+  const suppliers = useAppStore(state => state.suppliers)
   const updateReviewStatus = useAppStore(state => state.updateReviewStatus)
   const updateReviewQuote = useAppStore(state => state.updateReviewQuote)
+  const setCurrentDemand = useAppStore(state => state.setCurrentDemand)
 
-  const [activeTab, setActiveTab] = useState<FilterTab>('all')
-  const [showStatusModal, setShowStatusModal] = useState(false)
-  const [selectedReview, setSelectedReview] = useState<ReviewItem | null>(null)
-  const [statusNotes, setStatusNotes] = useState('')
-  const [showQuoteModal, setShowQuoteModal] = useState(false)
-  const [quotePrice, setQuotePrice] = useState('')
-  const [quoteMethod, setQuoteMethod] = useState(DeliveryMethodOptions[0])
-  const [quoteCycle, setQuoteCycle] = useState('')
+  const [selectedDemandId, setSelectedDemandId] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  const summary = useMemo(() => ({
-    total: reviewItems.length,
-    pending: reviewItems.filter(r => r.reviewStatus === 'pending').length,
-    shortlisted: reviewItems.filter(r => r.reviewStatus === 'shortlisted').length,
-    negotiating: reviewItems.filter(r => r.reviewStatus === 'negotiating').length,
-    won: reviewItems.filter(r => r.reviewStatus === 'won').length,
-    rejected: reviewItems.filter(r => r.reviewStatus === 'rejected').length
-  }), [reviewItems])
+  const [statusModalVisible, setStatusModalVisible] = useState(false)
+  const [quoteModalVisible, setQuoteModalVisible] = useState(false)
+  const [currentReview, setCurrentReview] = useState<any>(null)
+  const [targetStatus, setTargetStatus] = useState<string>('')
+  const [statusNote, setStatusNote] = useState('')
+  const [editPrice, setEditPrice] = useState('')
+  const [editDeliveryMethod, setEditDeliveryMethod] = useState('')
+  const [editDeliveryCycle, setEditDeliveryCycle] = useState('')
 
-  const filteredReviews = useMemo(() => {
-    if (activeTab === 'all') return reviewItems
-    return reviewItems.filter(r => r.reviewStatus === activeTab)
-  }, [reviewItems, activeTab])
+  const statusTabs = [
+    { key: 'all', label: '全部' },
+    { key: 'pending', label: '待评审' },
+    { key: 'shortlisted', label: '已入围' },
+    { key: 'negotiating', label: '商谈中' },
+    { key: 'won', label: '已中标' },
+    { key: 'eliminated', label: '已淘汰' },
+  ]
 
-  const handleUpdateStatus = (review: ReviewItem, status: ReviewStatus) => {
-    setSelectedReview(review)
-    setStatusNotes(review.reviewNotes)
-    setShowStatusModal(true)
-    // Store the status to apply
-    ;(window as any).__pendingStatus = status
-  }
+  const groupedReviews = useMemo(() => {
+    const groups: Record<string, any[]> = {}
+    reviewItems.forEach(r => {
+      if (!groups[r.demandId]) groups[r.demandId] = []
+      groups[r.demandId].push(r)
+    })
+    return groups
+  }, [reviewItems])
 
-  const confirmStatusUpdate = () => {
-    if (!selectedReview) return
-    const status = (window as any).__pendingStatus as ReviewStatus
-    updateReviewStatus(selectedReview.id, status, statusNotes)
-    Taro.showToast({ title: `已标记为${ReviewStatusMap[status].label}`, icon: 'success' })
-    setShowStatusModal(false)
-    setSelectedReview(null)
-  }
+  const demandList = useMemo(() => {
+    return Object.keys(groupedReviews).map(demandId => {
+      const demand = demands.find(d => d.id === demandId)
+      const reviews = groupedReviews[demandId]
+      const stats = {
+        total: reviews.length,
+        pending: reviews.filter(r => r.reviewStatus === 'pending').length,
+        shortlisted: reviews.filter(r => r.reviewStatus === 'shortlisted').length,
+        negotiating: reviews.filter(r => r.reviewStatus === 'negotiating').length,
+        won: reviews.filter(r => r.reviewStatus === 'won').length,
+        eliminated: reviews.filter(r => r.reviewStatus === 'eliminated').length,
+      }
+      return { demand, reviews, stats }
+    }).filter(item => item.demand)
+  }, [groupedReviews, demands])
 
-  const handleEditQuote = (review: ReviewItem) => {
-    setSelectedReview(review)
-    setQuotePrice(String(review.quotePrice))
-    setQuoteMethod(review.deliveryMethod)
-    setQuoteCycle(review.deliveryCycle)
-    setShowQuoteModal(true)
-  }
+  const currentDemand = useMemo(() =>
+    demands.find(d => d.id === selectedDemandId) || null,
+    [demands, selectedDemandId]
+  )
 
-  const confirmQuoteUpdate = () => {
-    if (!selectedReview || !quotePrice) {
-      Taro.showToast({ title: '请填写报价', icon: 'none' })
-      return
+  const currentReviews = useMemo(() => {
+    if (!selectedDemandId) return []
+    let list = groupedReviews[selectedDemandId] || []
+    if (statusFilter !== 'all') {
+      list = list.filter(r => r.reviewStatus === statusFilter)
     }
-    updateReviewQuote(selectedReview.id, Number(quotePrice), quoteMethod, quoteCycle)
+    return list.sort((a, b) => b.matchScore - a.matchScore)
+  }, [selectedDemandId, groupedReviews, statusFilter])
+
+  const shortlistedCount = useMemo(() => {
+    if (!selectedDemandId) return 0
+    return (groupedReviews[selectedDemandId] || []).filter(r =>
+      ['shortlisted', 'negotiating', 'won'].includes(r.reviewStatus)
+    ).length
+  }, [selectedDemandId, groupedReviews])
+
+  const backToGroups = () => {
+    setSelectedDemandId(null)
+    setStatusFilter('all')
+  }
+
+  const goToDetail = (demand: any) => {
+    setCurrentDemand(demand)
+    Taro.navigateTo({ url: `/pages/demand-detail/index?id=${demand.id}` })
+  }
+
+  const goToSupplier = (supplierId: string) => {
+    const supplier = suppliers.find(s => s.id === supplierId)
+    if (supplier) {
+      const setSupplier = useAppStore.getState().setCurrentSupplier
+      setSupplier(supplier)
+    }
+    Taro.navigateTo({ url: `/pages/supplier-detail/index?id=${supplierId}` })
+  }
+
+  const openStatusModal = (review: any, status: string) => {
+    setCurrentReview(review)
+    setTargetStatus(status)
+    setStatusNote('')
+    setStatusModalVisible(true)
+  }
+
+  const handleStatusConfirm = () => {
+    if (!currentReview || !targetStatus) return
+    updateReviewStatus(currentReview.id, targetStatus as any, statusNote)
+    setStatusModalVisible(false)
+    Taro.showToast({ title: '状态已更新', icon: 'success' })
+  }
+
+  const openQuoteModal = (review: any) => {
+    setCurrentReview(review)
+    setEditPrice(String(review.quotePrice || ''))
+    setEditDeliveryMethod(review.deliveryMethod || '')
+    setEditDeliveryCycle(review.deliveryCycle || '')
+    setQuoteModalVisible(true)
+  }
+
+  const handleQuoteConfirm = () => {
+    if (!currentReview) return
+    const price = parseFloat(editPrice) || 0
+    updateReviewQuote(currentReview.id, price, editDeliveryMethod, editDeliveryCycle)
+    setQuoteModalVisible(false)
     Taro.showToast({ title: '报价已更新', icon: 'success' })
-    setShowQuoteModal(false)
-    setSelectedReview(null)
   }
 
   const generateComparison = () => {
-    const shortlisted = reviewItems.filter(r => ['shortlisted', 'negotiating', 'won'].includes(r.reviewStatus))
-    if (shortlisted.length < 2) {
+    if (shortlistedCount < 2) {
       Taro.showToast({ title: '至少2家入围供应方可生成比对表', icon: 'none' })
       return
     }
-    const demandId = shortlisted[0].demandId
-    Taro.navigateTo({ url: `/pages/comparison-detail/index?demandId=${demandId}` })
+    Taro.navigateTo({ url: `/pages/comparison-detail/index?demandId=${selectedDemandId}` })
   }
 
-  const goSatisfaction = (review: ReviewItem) => {
+  const goSatisfaction = (review: any) => {
     Taro.navigateTo({
       url: `/pages/satisfaction/index?reviewId=${review.id}&demandId=${review.demandId}&supplierId=${review.supplierId}`
     })
   }
 
-  useDidShow(() => {
-    console.log('[Review] Page showed, total reviews:', reviewItems.length)
-  })
-
-  return (
-    <ScrollView scrollY className={styles.page} enhanced showScrollbar={false}>
+  const GroupView = () => (
+    <View>
       <View className={styles.summaryCards}>
         <View className={styles.summaryItem}>
-          <Text className={styles.summaryValue}>{summary.total}</Text>
-          <Text className={styles.summaryLabel}>评审总数</Text>
+          <Text className={styles.summaryValue}>{demandList.length}</Text>
+          <Text className={styles.summaryLabel}>评审需求</Text>
         </View>
         <View className={styles.summaryItem}>
-          <Text className={classnames(styles.summaryValue, styles.summaryValueOrange)}>{summary.pending}</Text>
+          <Text className={`${styles.summaryValue} ${styles.summaryValueOrange}`}>
+            {reviewItems.filter(r => r.reviewStatus === 'pending').length}
+          </Text>
           <Text className={styles.summaryLabel}>待评审</Text>
         </View>
         <View className={styles.summaryItem}>
-          <Text className={classnames(styles.summaryValue, styles.summaryValuePurple)}>{summary.shortlisted}</Text>
-          <Text className={styles.summaryLabel}>已入围</Text>
+          <Text className={`${styles.summaryValue} ${styles.summaryValuePurple}`}>
+            {reviewItems.filter(r => ['shortlisted', 'negotiating'].includes(r.reviewStatus)).length}
+          </Text>
+          <Text className={styles.summaryLabel}>入围中</Text>
         </View>
         <View className={styles.summaryItem}>
-          <Text className={classnames(styles.summaryValue, styles.summaryValueGreen)}>{summary.won}</Text>
-          <Text className={styles.summaryLabel}>已中标</Text>
+          <Text className={`${styles.summaryValue} ${styles.summaryValueGreen}`}>
+            {reviewItems.filter(r => r.reviewStatus === 'won').length}
+          </Text>
+          <Text className={styles.summaryLabel}>已成交</Text>
         </View>
       </View>
 
-      <ScrollView scrollX className={styles.tabsRow} enhanced showScrollbar={false}>
-        {TABS.map(tab => (
+      <View className={styles.sectionSubtitle}>
+        <Text className={styles.sectionSubtitleText}>按需求分组</Text>
+        <Text className={styles.sectionSubtitleHint}>点击查看该需求下的供应方评审</Text>
+      </View>
+
+      {demandList.length === 0 ? (
+        <View className={styles.emptyState}>
+          <Text className={styles.emptyIcon}>📋</Text>
+          <Text className={styles.emptyTitle}>暂无评审项</Text>
+          <Text className={styles.emptyDesc}>去供应匹配页面找到合适的供应方，加入评审清单吧</Text>
+          <View className={styles.emptyBtn} onClick={() => Taro.switchTab({ url: '/pages/match/index' })}>
+            <Text>去寻找供应方</Text>
+          </View>
+        </View>
+      ) : (
+        demandList.map(({ demand, stats }) => (
+          <View key={demand!.id} className={styles.demandGroupCard} onClick={() => setSelectedDemandId(demand!.id)}>
+            <View className={styles.demandGroupHeader}>
+              <View className={styles.demandGroupTitleRow}>
+                <Text className={styles.demandGroupTitle}>{demand!.title}</Text>
+                <Text className={styles.demandGroupArrow}>→</Text>
+              </View>
+              <View className={styles.demandGroupMeta}>
+                <StatusTag label={ReviewStatusMap[demand!.status]?.label || '进行中'} color={ReviewStatusMap[demand!.status]?.color || '#165dff'} size="small" />
+                <Text className={styles.demandGroupCode}>{demand!.id}</Text>
+              </View>
+            </View>
+
+            <View className={styles.demandGroupInfo}>
+              <View className={styles.demandGroupInfoItem}>
+                <Text className={styles.demandGroupInfoLabel}>行业</Text>
+                <Text className={styles.demandGroupInfoValue}>{demand!.industry}</Text>
+              </View>
+              <View className={styles.demandGroupInfoItem}>
+                <Text className={styles.demandGroupInfoLabel}>预算</Text>
+                <Text className={styles.demandGroupInfoValue}>{formatBudget(demand!.budgetMin, demand!.budgetMax)}</Text>
+              </View>
+              <View className={styles.demandGroupInfoItem}>
+                <Text className={styles.demandGroupInfoLabel}>截止</Text>
+                <Text className={styles.demandGroupInfoValue}>{getDaysRemaining(demand!.deadline)}天后</Text>
+              </View>
+            </View>
+
+            <View className={styles.demandGroupStats}>
+              <View className={styles.demandGroupStat}>
+                <Text className={styles.demandGroupStatNum} style={{ color: '#165dff' }}>{stats.total}</Text>
+                <Text className={styles.demandGroupStatLabel}>候选</Text>
+              </View>
+              <View className={styles.demandGroupStat}>
+                <Text className={styles.demandGroupStatNum} style={{ color: '#ff7d00' }}>{stats.pending}</Text>
+                <Text className={styles.demandGroupStatLabel}>待评审</Text>
+              </View>
+              <View className={styles.demandGroupStat}>
+                <Text className={styles.demandGroupStatNum} style={{ color: '#722ed1' }}>{stats.shortlisted + stats.negotiating}</Text>
+                <Text className={styles.demandGroupStatLabel}>入围</Text>
+              </View>
+              <View className={styles.demandGroupStat}>
+                <Text className={styles.demandGroupStatNum} style={{ color: '#00b42a' }}>{stats.won}</Text>
+                <Text className={styles.demandGroupStatLabel}>中标</Text>
+              </View>
+            </View>
+
+            {stats.shortlisted + stats.negotiating >= 2 && (
+              <View className={styles.demandGroupCompareHint}>
+                <Text className={styles.demandGroupCompareText}>💡 已有 {stats.shortlisted + stats.negotiating} 家入围，可生成比对表</Text>
+              </View>
+            )}
+          </View>
+        ))
+      )}
+    </View>
+  )
+
+  const DetailView = () => (
+    <View>
+      <View className={styles.detailBackRow} onClick={backToGroups}>
+        <Text className={styles.detailBackIcon}>←</Text>
+        <Text className={styles.detailBackText}>返回需求列表</Text>
+      </View>
+
+      <View className={styles.detailDemandCard}>
+        <View className={styles.detailDemandTitle} onClick={() => goToDetail(currentDemand)}>
+          <Text>{currentDemand?.title}</Text>
+          <Text className={styles.detailDemandLink}>查看需求详情 →</Text>
+        </View>
+        <View className={styles.detailDemandMeta}>
+          <Text className={styles.detailDemandMetaItem}>🏢 {currentDemand?.industry}</Text>
+          <Text className={styles.detailDemandMetaItem}>📍 {currentDemand?.region}</Text>
+          <Text className={styles.detailDemandMetaItem}>💰 {formatBudget(currentDemand?.budgetMin || 0, currentDemand?.budgetMax || 0)}</Text>
+        </View>
+        <View className={styles.detailDemandStats}>
+          <View className={styles.detailDemandStat}>
+            <Text className={styles.detailDemandStatNum}>{currentReviews.length}</Text>
+            <Text className={styles.detailDemandStatLabel}>候选供应方</Text>
+          </View>
+          <View className={styles.detailDemandStat}>
+            <Text className={styles.detailDemandStatNum} style={{ color: '#722ed1' }}>{shortlistedCount}</Text>
+            <Text className={styles.detailDemandStatLabel}>已入围</Text>
+          </View>
+          <View className={styles.detailDemandStat}>
+            <Text className={styles.detailDemandStatNum} style={{ color: '#00b42a' }}>
+              {currentReviews.filter(r => r.reviewStatus === 'won').length}
+            </Text>
+            <Text className={styles.detailDemandStatLabel}>已中标</Text>
+          </View>
+        </View>
+
+        <View className={styles.generateCompareBtn} onClick={generateComparison}>
+          <Text>📊 生成需求比对表</Text>
+          <Text className={styles.generateCompareHint}>{shortlistedCount >= 2 ? `(${shortlistedCount}家入围)` : '(需至少2家入围)'}</Text>
+        </View>
+      </View>
+
+      <View className={styles.tabsRow}>
+        {statusTabs.map(tab => (
           <View
             key={tab.key}
-            className={classnames(styles.tabChip, activeTab === tab.key && styles.tabChipActive)}
-            onClick={() => setActiveTab(tab.key)}
+            className={`${styles.tabChip} ${statusFilter === tab.key ? styles.tabChipActive : ''}`}
+            onClick={() => setStatusFilter(tab.key)}
           >
-            {tab.label}
+            <Text>{tab.label}</Text>
           </View>
         ))}
-      </ScrollView>
+      </View>
 
-      <Button className={styles.generateCompareBtn} onClick={generateComparison}>
-        📊 生成需求比对表
-      </Button>
-
-      {filteredReviews.length > 0 ? (
-        filteredReviews.map(review => {
-          const statusInfo = ReviewStatusMap[review.reviewStatus]
+      {currentReviews.length === 0 ? (
+        <View className={styles.emptyState}>
+          <Text className={styles.emptyIcon}>🔍</Text>
+          <Text className={styles.emptyTitle}>暂无该状态的评审</Text>
+          <Text className={styles.emptyDesc}>切换其他状态标签查看</Text>
+        </View>
+      ) : (
+        currentReviews.map(review => {
+          const statusInfo = ReviewStatusMap[review.reviewStatus] || ReviewStatusMap.pending
+          const supplier = suppliers.find(s => s.id === review.supplierId)
           return (
             <View key={review.id} className={styles.reviewCard}>
               <View className={styles.reviewHeader}>
                 <View className={styles.reviewDemand}>
-                  <Text className={styles.reviewDemandTitle}>{review.demandTitle}</Text>
-                  <Text className={styles.reviewDemandSub}>创建于 {review.createdAt}</Text>
+                  <Text className={styles.reviewDemandTitle} onClick={() => goToSupplier(review.supplierId)}>
+                    {review.supplierName}
+                  </Text>
+                  <Text className={styles.reviewDemandSub}>{review.productName}</Text>
                 </View>
                 <View className={styles.reviewMatchScore}>
                   <Text className={styles.reviewScoreValue}>{review.matchScore}</Text>
-                  <Text className={styles.reviewScoreLabel}>匹配度</Text>
+                  <Text className={styles.reviewScoreLabel}>匹配分</Text>
                 </View>
-              </View>
-
-              <View className={styles.supplierInfo}>
-                <View className={styles.supplierNameRow}>
-                  <Text className={styles.supplierName}>{review.supplierName}</Text>
-                  <StatusTag label={statusInfo.label} color={statusInfo.color} size='sm' />
-                </View>
-                <Text className={styles.productName}>📦 {review.productName}</Text>
               </View>
 
               <View className={styles.quoteRow}>
                 <View className={styles.quoteItem}>
-                  <Text className={styles.quoteLabel}>报价</Text>
-                  <Text className={classnames(styles.quoteValue, styles.quotePrice)}>
-                    ¥{formatPrice(review.quotePrice)}
-                  </Text>
+                  <Text className={styles.quoteLabel}>报价金额</Text>
+                  <Text className={`${styles.quoteValue} ${styles.quotePrice}`}>¥{formatPrice(review.quotePrice)}</Text>
                 </View>
                 <View className={styles.quoteItem}>
                   <Text className={styles.quoteLabel}>交付方式</Text>
@@ -184,154 +339,174 @@ const ReviewPage: React.FC = () => {
 
               {review.reviewNotes && (
                 <View className={styles.reviewNotes}>
-                  <Text className={styles.notesLabel}>📝 评审备注</Text>
+                  <Text className={styles.notesLabel}>评审备注</Text>
                   <Text className={styles.notesText}>{review.reviewNotes}</Text>
                 </View>
               )}
 
               <View className={styles.statusActions}>
-                {review.reviewStatus !== 'shortlisted' && review.reviewStatus !== 'won' && review.reviewStatus !== 'rejected' && (
-                  <View
-                    className={classnames(styles.statusBtn, styles.statusBtnShortlisted)}
-                    onClick={() => handleUpdateStatus(review, 'shortlisted')}
-                  >
-                    标记入围
+                {review.reviewStatus === 'pending' && (
+                  <>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnShortlisted}`} onClick={() => openStatusModal(review, 'shortlisted')}>
+                      <Text>入围</Text>
+                    </View>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'eliminated')}>
+                      <Text>淘汰</Text>
+                    </View>
+                  </>
+                )}
+                {review.reviewStatus === 'shortlisted' && (
+                  <>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnNegotiating}`} onClick={() => openStatusModal(review, 'negotiating')}>
+                      <Text>商谈</Text>
+                    </View>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'eliminated')}>
+                      <Text>淘汰</Text>
+                    </View>
+                  </>
+                )}
+                {review.reviewStatus === 'negotiating' && (
+                  <>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnWon}`} onClick={() => openStatusModal(review, 'won')}>
+                      <Text>中标</Text>
+                    </View>
+                    <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`} onClick={() => openStatusModal(review, 'eliminated')}>
+                      <Text>淘汰</Text>
+                    </View>
+                  </>
+                )}
+                {review.reviewStatus === 'won' && (
+                  <View className={`${styles.statusBtn} ${styles.statusBtnWon}`}>
+                    <Text>✓ 已中标</Text>
                   </View>
                 )}
-                {review.reviewStatus !== 'negotiating' && review.reviewStatus !== 'won' && review.reviewStatus !== 'rejected' && (
-                  <View
-                    className={classnames(styles.statusBtn, styles.statusBtnNegotiating)}
-                    onClick={() => handleUpdateStatus(review, 'negotiating')}
-                  >
-                    商谈中
-                  </View>
-                )}
-                {review.reviewStatus !== 'won' && review.reviewStatus !== 'rejected' && (
-                  <View
-                    className={classnames(styles.statusBtn, styles.statusBtnWon)}
-                    onClick={() => handleUpdateStatus(review, 'won')}
-                  >
-                    确认中标
-                  </View>
-                )}
-                {review.reviewStatus !== 'rejected' && (
-                  <View
-                    className={classnames(styles.statusBtn, styles.statusBtnRejected)}
-                    onClick={() => handleUpdateStatus(review, 'rejected')}
-                  >
-                    淘汰
+                {review.reviewStatus === 'eliminated' && (
+                  <View className={`${styles.statusBtn} ${styles.statusBtnRejected}`}>
+                    <Text>✗ 已淘汰</Text>
                   </View>
                 )}
               </View>
 
               <View className={styles.actionRow}>
-                <View className={styles.actionBtn} onClick={() => handleEditQuote(review)}>
-                  ✏️ 编辑报价
+                <View className={styles.actionBtn} onClick={() => openQuoteModal(review)}>
+                  <Text>编辑报价</Text>
                 </View>
-                {review.reviewStatus === 'won' && (
-                  <View className={classnames(styles.actionBtn, styles.actionBtnPrimary)} onClick={() => goSatisfaction(review)}>
-                    ⭐ 满意度评价
+                {review.reviewStatus === 'won' ? (
+                  <View className={`${styles.actionBtn} ${styles.actionBtnPrimary}`} onClick={() => goSatisfaction(review)}>
+                    <Text>满意度评价</Text>
                   </View>
-                )}
-                {review.reviewStatus !== 'won' && (
-                  <View
-                    className={classnames(styles.actionBtn, styles.actionBtnPrimary)}
-                    onClick={() => Taro.switchTab({ url: '/pages/communication/index' })}
-                  >
-                    💬 去沟通
+                ) : (
+                  <View className={`${styles.actionBtn} ${styles.actionBtnPrimary}`} onClick={() => goToSupplier(review.supplierId)}>
+                    <Text>查看供应方</Text>
                   </View>
                 )}
               </View>
             </View>
           )
         })
-      ) : (
-        <View className={styles.emptyState}>
-          <Text className={styles.emptyIcon}>📋</Text>
-          <Text className={styles.emptyTitle}>暂无评审数据</Text>
-          <Text className={styles.emptyDesc}>在供应匹配页面收藏供应方后，系统会自动将其加入评审清单</Text>
-          <Button
-            className={styles.emptyBtn}
-            onClick={() => Taro.switchTab({ url: '/pages/match/index' })}
-          >
-            🎯 去匹配供应方
-          </Button>
-        </View>
       )}
+    </View>
+  )
 
-      {showStatusModal && selectedReview && (
-        <View className={styles.modalMask} onClick={() => setShowStatusModal(false)}>
-          <View className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <Text className={styles.modalTitle}>更新评审状态</Text>
+  return (
+    <ScrollView scrollY className={styles.page}>
+      <View className={styles.pageHeader}>
+        <Text className={styles.pageTitle}>评审清单</Text>
+        <Text className={styles.pageSubtitle}>数据采购决策工作台</Text>
+      </View>
+
+      {selectedDemandId ? <DetailView /> : <GroupView />}
+
+      {statusModalVisible && (
+        <View className={styles.modalMask} onClick={() => setStatusModalVisible(false)}>
+          <View className={styles.modalContent} onClick={(e: any) => e.stopPropagation()}>
+            <Text className={styles.modalTitle}>
+              {targetStatus === 'shortlisted' && '标记为入围'}
+              {targetStatus === 'negotiating' && '标记为商谈中'}
+              {targetStatus === 'won' && '标记为中标'}
+              {targetStatus === 'eliminated' && '标记为淘汰'}
+            </Text>
             <View className={styles.modalRow}>
-              <Text className={styles.modalLabel}>供应方：{selectedReview.supplierName}</Text>
+              <Text className={styles.modalLabel}>供应方</Text>
+              <Text className={styles.modalValue}>{currentReview?.supplierName}</Text>
             </View>
             <View className={styles.modalRow}>
-              <Text className={styles.modalLabel}>添加评审备注（可选）</Text>
+              <Text className={styles.modalLabel}>
+                {targetStatus === 'eliminated' ? '淘汰原因' : '评审备注'} <Text style={{ color: '#c9cdd4' }}>（选填）</Text>
+              </Text>
               <Textarea
                 className={styles.modalInput}
-                placeholder='请输入评审备注，如：数据维度匹配度高、报价合理等...'
-                value={statusNotes}
-                onInput={(e) => setStatusNotes(e.detail.value)}
-                maxlength={500}
+                placeholder={targetStatus === 'eliminated' ? '请输入淘汰原因，便于后续复盘总结' : '请输入评审备注信息'}
+                placeholderStyle="color: #c9cdd4"
+                value={statusNote}
+                onInput={(e: any) => setStatusNote(e.detail.value)}
+                maxlength={200}
               />
             </View>
             <View className={styles.modalActions}>
-              <Button className={styles.modalBtnCancel} onClick={() => setShowStatusModal(false)}>取消</Button>
-              <Button className={styles.modalBtnConfirm} onClick={confirmStatusUpdate}>确认更新</Button>
+              <View className={styles.modalBtnCancel} onClick={() => setStatusModalVisible(false)}>
+                <Text>取消</Text>
+              </View>
+              <View className={styles.modalBtnConfirm} onClick={handleStatusConfirm}>
+                <Text>确认</Text>
+              </View>
             </View>
           </View>
         </View>
       )}
 
-      {showQuoteModal && selectedReview && (
-        <View className={styles.modalMask} onClick={() => setShowQuoteModal(false)}>
-          <View className={styles.modalContent} onClick={e => e.stopPropagation()}>
+      {quoteModalVisible && (
+        <View className={styles.modalMask} onClick={() => setQuoteModalVisible(false)}>
+          <View className={styles.modalContent} onClick={(e: any) => e.stopPropagation()}>
             <Text className={styles.modalTitle}>编辑报价信息</Text>
             <View className={styles.modalRow}>
-              <Text className={styles.modalLabel}>报价（元）</Text>
-              <Input
+              <Text className={styles.modalLabel}>报价金额（元）</Text>
+              <Textarea
                 className={styles.modalInput}
-                style={{ minHeight: '80rpx' }}
-                type='digit'
-                placeholder='请输入报价金额'
-                value={quotePrice}
-                onInput={(e) => setQuotePrice(e.detail.value)}
+                style={{ minHeight: 80 }}
+                type="digit"
+                placeholder="请输入报价金额"
+                placeholderStyle="color: #c9cdd4"
+                value={editPrice}
+                onInput={(e: any) => setEditPrice(e.detail.value)}
               />
             </View>
             <View className={styles.modalRow}>
               <Text className={styles.modalLabel}>交付方式</Text>
-              <View style={{ display: 'flex', flexWrap: 'wrap', gap: '16rpx' }}>
-                {DeliveryMethodOptions.map(method => (
+              <View className={styles.selectorRow}>
+                {['API接口', '离线数据包', '数据库同步', 'SaaS账户', '定制化服务', '混合模式'].map(opt => (
                   <View
-                    key={method}
-                    className={classnames(styles.statusBtn, quoteMethod === method && styles.statusBtnShortlisted)}
-                    onClick={() => setQuoteMethod(method)}
+                    key={opt}
+                    className={`${styles.selectorChip} ${editDeliveryMethod === opt ? styles.selectorChipActive : ''}`}
+                    onClick={() => setEditDeliveryMethod(opt)}
                   >
-                    {method}
+                    <Text>{opt}</Text>
                   </View>
                 ))}
               </View>
             </View>
             <View className={styles.modalRow}>
               <Text className={styles.modalLabel}>交付周期</Text>
-              <Input
+              <Textarea
                 className={styles.modalInput}
-                style={{ minHeight: '80rpx' }}
-                placeholder='如：合同签署后7个工作日'
-                value={quoteCycle}
-                onInput={(e) => setQuoteCycle(e.detail.value)}
+                style={{ minHeight: 80 }}
+                placeholder="如：3-5工作日"
+                placeholderStyle="color: #c9cdd4"
+                value={editDeliveryCycle}
+                onInput={(e: any) => setEditDeliveryCycle(e.detail.value)}
               />
             </View>
             <View className={styles.modalActions}>
-              <Button className={styles.modalBtnCancel} onClick={() => setShowQuoteModal(false)}>取消</Button>
-              <Button className={styles.modalBtnConfirm} onClick={confirmQuoteUpdate}>保存</Button>
+              <View className={styles.modalBtnCancel} onClick={() => setQuoteModalVisible(false)}>
+                <Text>取消</Text>
+              </View>
+              <View className={styles.modalBtnConfirm} onClick={handleQuoteConfirm}>
+                <Text>保存</Text>
+              </View>
             </View>
           </View>
         </View>
       )}
-
-      <View style={{ height: '40rpx' }} />
     </ScrollView>
   )
 }
